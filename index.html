@@ -9,6 +9,8 @@
     <!-- html2pdf bundle & html2canvas untuk JPG -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- FileSaver.js untuk menyimpan file dengan aman -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -581,23 +583,108 @@
         }
         .magic-pop { animation: slideFade 0.25s ease-out; }
 
-        .report-container {
+        /* Gaya untuk laporan - STYLE LENGKAP UNTUK PDF */
+        .report-for-export {
             font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            line-height: 1.5;
-            letter-spacing: normal;
-            font-weight: normal;
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
+            line-height: 1.6;
             background: white;
-            width: 800px;
-            padding: 28px 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+            box-sizing: border-box;
+            color: #1e293b;
         }
-        .report-container table {
-            font-family: inherit;
+        .report-for-export .header-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            border-bottom: 3px solid #0f3b5c;
+            padding-bottom: 24px;
+            margin-bottom: 32px;
         }
-        .report-container td, .report-container th {
-            letter-spacing: 0.2px;
-            font-weight: 500;
+        .report-for-export .logo-area {
+            width: 70px;
+            height: 70px;
+            background: #f8fafc;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+        .report-for-export .logo-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .report-for-export .title-area h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #0f3b5c;
+            letter-spacing: -0.5px;
+        }
+        .report-for-export .title-area p {
+            font-size: 0.8rem;
+            margin: 8px 0 0;
+            color: #475569;
+        }
+        .report-for-export .stats-cards {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .report-for-export .stat-item {
+            flex: 1;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+        .report-for-export .stat-item.income-card { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .report-for-export .stat-item.expense-card { background: #fef2f2; border: 1px solid #fecaca; }
+        .report-for-export .stat-item.balance-card { background: #eff6ff; border: 1px solid #bfdbfe; }
+        .report-for-export .stat-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .report-for-export .stat-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+        .report-for-export .stat-value.income { color: #10b981; }
+        .report-for-export .stat-value.expense { color: #ef4444; }
+        .report-for-export .stat-value.balance { color: #0f3b5c; }
+        .report-for-export table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .report-for-export th {
+            background: #f1f5f9;
+            padding: 14px 12px;
+            text-align: left;
+            font-weight: 700;
+            color: #1e293b;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        .report-for-export td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+        }
+        .report-for-export .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        .report-for-export .empty-data {
+            text-align: center;
+            padding: 60px;
+            color: #94a3b8;
         }
 
         /* Modal Styles */
@@ -710,9 +797,6 @@
             margin-bottom: 16px;
             text-align: center;
         }
-        .delete-confirm-modal .confirm-icon {
-            color: #ef4444;
-        }
 
         /* Toast notification */
         .toast-notification {
@@ -781,7 +865,6 @@
 </header>
 
 <main class="main-container" id="mainContainer">
-    <!-- HOME PAGE -->
     <div id="homePage" class="page-container active-page">
         <div class="stats-row">
             <div class="stat-card"><div class="stat-label">💚 Total Pemasukan</div><div class="stat-number income" id="totalIncome">Rp 0</div></div>
@@ -795,7 +878,6 @@
         </div>
     </div>
 
-    <!-- TAMBAH DATA PAGE -->
     <div id="addPage" class="page-container">
         <div class="form-section">
             <div class="form-header">
@@ -827,7 +909,6 @@
         </div>
     </div>
 
-    <!-- RIWAYAT PAGE -->
     <div id="historyPage" class="page-container">
         <div class="history-header">
             <h3>📜 RIWAYAT TRANSAKSI</h3>
@@ -838,7 +919,6 @@
         </div>
     </div>
 
-    <!-- CETAK PAGE -->
     <div id="printPage" class="page-container">
         <div style="margin-bottom: 20px;">
             <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; text-align: center;">📄 EXPORT LAPORAN KEUANGAN</h3>
@@ -863,7 +943,6 @@
     </div>
 </main>
 
-<!-- BOTTOM NAVIGATION -->
 <div class="bottom-nav">
     <button class="nav-item" data-page="home">
         <i class="fas fa-home"></i>
@@ -883,7 +962,6 @@
     </button>
 </div>
 
-<!-- MODAL EDIT -->
 <div id="editModal" class="modal-overlay">
     <div class="edit-modal">
         <h3><i class="fas fa-pen"></i> Edit Transaksi</h3>
@@ -913,7 +991,6 @@
     </div>
 </div>
 
-<!-- MODAL KONFIRMASI RESET DATA -->
 <div id="confirmResetModal" class="modal-overlay">
     <div class="confirm-modal">
         <div class="confirm-icon">
@@ -931,7 +1008,6 @@
     </div>
 </div>
 
-<!-- MODAL KONFIRMASI HAPUS TRANSAKSI -->
 <div id="confirmDeleteModal" class="modal-overlay">
     <div class="delete-confirm-modal">
         <div class="confirm-icon">
@@ -950,16 +1026,14 @@
     </div>
 </div>
 
-<!-- Toast notification -->
 <div id="toastMessage" class="toast-notification"></div>
 
 <script>
     let transactions = [];
     let editingId = null;
     let currentPage = 'home';
-    let pendingDeleteId = null; // Untuk menyimpan ID transaksi yang akan dihapus
+    let pendingDeleteId = null;
 
-    // Toast notification function (menggantikan alert)
     function showToast(message, isError = false) {
         const toast = document.getElementById('toastMessage');
         toast.textContent = message;
@@ -970,7 +1044,6 @@
         }, 2000);
     }
 
-    // Kumpulan kata mutiara untuk semangat berkhidmah
     const wisdomQuotes = [
         { text: "Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain", author: "- HR. Thabrani" },
         { text: "Barang siapa yang memberi kemudahan kepada orang yang kesulitan, maka Allah akan memudahkannya di dunia dan akhirat", author: "- HR. Muslim" },
@@ -997,7 +1070,6 @@
         const homeWisdomAuthor = document.getElementById('wisdomAuthorHome');
         const printWisdomText = document.getElementById('wisdomTextPrint');
         const printWisdomAuthor = document.getElementById('wisdomAuthorPrint');
-        
         if (homeWisdomText) homeWisdomText.innerText = wisdom.text;
         if (homeWisdomAuthor) homeWisdomAuthor.innerText = wisdom.author;
         if (printWisdomText) printWisdomText.innerText = wisdom.text;
@@ -1034,7 +1106,7 @@
     function formatDateReport(iso) {
         if (!iso) return '-';
         const d = new Date(iso);
-        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
     function escapeHtml(str) {
@@ -1055,7 +1127,6 @@
         }
         let html = '';
         const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        
         sortedTransactions.forEach(tx => {
             const amountClass = tx.type === 'income' ? 'tx-income' : 'tx-expense';
             const prefix = tx.type === 'income' ? '+' : '−';
@@ -1080,9 +1151,7 @@
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const id = parseInt(btn.getAttribute('data-id'));
-                if (id && !isNaN(id)) {
-                    openDeleteConfirmModal(id);
-                }
+                if (id && !isNaN(id)) openDeleteConfirmModal(id);
             });
         });
         
@@ -1090,9 +1159,7 @@
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const id = parseInt(btn.getAttribute('data-id'));
-                if (id && !isNaN(id)) {
-                    openEditModal(id);
-                }
+                if (id && !isNaN(id)) openEditModal(id);
             });
         });
     }
@@ -1106,14 +1173,9 @@
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
-                if (Array.isArray(parsed)) {
-                    transactions = parsed;
-                } else {
-                    transactions = [];
-                }
-            } catch(e) { 
-                transactions = []; 
-            }
+                if (Array.isArray(parsed)) transactions = parsed;
+                else transactions = [];
+            } catch(e) { transactions = []; }
         } else {
             transactions = [
                 { id: 2001, type: 'income', description: 'Infaq Jumat Berkah', amount: 150000, date: new Date(Date.now() - 86400000).toISOString() },
@@ -1122,26 +1184,14 @@
             ];
             persist();
         }
-        
         let needUpdate = false;
         for (let i = 0; i < transactions.length; i++) {
             const t = transactions[i];
-            if (!t.date) { 
-                t.date = new Date().toISOString(); 
-                needUpdate = true; 
-            }
-            if (!t.id || typeof t.id !== 'number') { 
-                t.id = generateId();
-                needUpdate = true; 
-            }
-            if (typeof t.amount !== 'number') {
-                t.amount = parseFloat(t.amount) || 0;
-                needUpdate = true;
-            }
+            if (!t.date) { t.date = new Date().toISOString(); needUpdate = true; }
+            if (!t.id || typeof t.id !== 'number') { t.id = generateId(); needUpdate = true; }
+            if (typeof t.amount !== 'number') { t.amount = parseFloat(t.amount) || 0; needUpdate = true; }
         }
-        if (needUpdate) {
-            persist();
-        }
+        if (needUpdate) persist();
     }
 
     function animateElement(el) {
@@ -1151,24 +1201,12 @@
         }
     }
 
-    function addTransaction(type, description, amountRaw, event) {
+    function addTransaction(type, description, amountRaw) {
         let amount = parseFloat(amountRaw);
-        if (isNaN(amount) || amount <= 0) { 
-            showToast('⚠️ Nominal harus lebih dari 0', true); 
-            return false; 
-        }
-        if (!description || description.trim() === '') { 
-            showToast('📝 Deskripsi tidak boleh kosong', true); 
-            return false; 
-        }
+        if (isNaN(amount) || amount <= 0) { showToast('⚠️ Nominal harus lebih dari 0', true); return false; }
+        if (!description || description.trim() === '') { showToast('📝 Deskripsi tidak boleh kosong', true); return false; }
         amount = Math.floor(amount);
-        const newTx = {
-            id: generateId(),
-            type: type,
-            description: description.trim(),
-            amount: amount,
-            date: new Date().toISOString()
-        };
+        const newTx = { id: generateId(), type: type, description: description.trim(), amount: amount, date: new Date().toISOString() };
         transactions.push(newTx);
         persist();
         updateStats();
@@ -1178,62 +1216,39 @@
         return true;
     }
 
-    // Fungsi untuk membuka modal konfirmasi hapus transaksi
     function openDeleteConfirmModal(id) {
         const tx = transactions.find(t => t.id === id);
-        if (!tx) {
-            showToast('❌ Data transaksi tidak ditemukan!', true);
-            return;
-        }
-        
+        if (!tx) { showToast('❌ Data transaksi tidak ditemukan!', true); return; }
         pendingDeleteId = id;
-        const deleteTxDesc = document.getElementById('deleteTxDesc');
         const amountPrefix = tx.type === 'income' ? '+' : '−';
-        deleteTxDesc.innerHTML = `${escapeHtml(tx.description)}<br><span style="font-size:0.75rem; color:${tx.type === 'income' ? '#10b981' : '#ef4444'}">${amountPrefix} ${formatRupiah(tx.amount)}</span>`;
-        
-        const modal = document.getElementById('confirmDeleteModal');
-        modal.classList.add('active');
+        document.getElementById('deleteTxDesc').innerHTML = `${escapeHtml(tx.description)}<br><span style="font-size:0.75rem; color:${tx.type === 'income' ? '#10b981' : '#ef4444'}">${amountPrefix} ${formatRupiah(tx.amount)}</span>`;
+        document.getElementById('confirmDeleteModal').classList.add('active');
         document.body.classList.add('modal-open');
     }
 
     function closeDeleteConfirmModal() {
-        const modal = document.getElementById('confirmDeleteModal');
-        modal.classList.remove('active');
+        document.getElementById('confirmDeleteModal').classList.remove('active');
         document.body.classList.remove('modal-open');
         pendingDeleteId = null;
     }
 
     function executeDeleteTransaction() {
-        if (pendingDeleteId === null) {
-            showToast('Tidak ada transaksi yang akan dihapus', true);
-            return;
-        }
-        
-        const before = transactions.length;
+        if (pendingDeleteId === null) { showToast('Tidak ada transaksi yang akan dihapus', true); return; }
         transactions = transactions.filter(t => t.id !== pendingDeleteId);
-        if (transactions.length === before) {
-            closeDeleteConfirmModal();
-            return;
-        }
-        
         persist();
         updateStats();
         renderTransactions();
-        animateElement(document.querySelector('.tx-list'));
         showToast('🗑 Transaksi telah dihapus');
         closeDeleteConfirmModal();
     }
 
-    // Fungsi untuk membuka modal konfirmasi reset
     function openResetConfirmModal() {
-        const modal = document.getElementById('confirmResetModal');
-        modal.classList.add('active');
+        document.getElementById('confirmResetModal').classList.add('active');
         document.body.classList.add('modal-open');
     }
 
     function closeResetConfirmModal() {
-        const modal = document.getElementById('confirmResetModal');
-        modal.classList.remove('active');
+        document.getElementById('confirmResetModal').classList.remove('active');
         document.body.classList.remove('modal-open');
     }
 
@@ -1242,91 +1257,52 @@
         persist();
         updateStats();
         renderTransactions();
-        animateElement(document.querySelector('.tx-list'));
         showToast('🗑 Semua data telah direset');
         closeResetConfirmModal();
     }
 
     function openEditModal(id) {
         const tx = transactions.find(t => t.id === id);
-        if (!tx) {
-            showToast('❌ Data transaksi tidak ditemukan!', true);
-            return;
-        }
-        
+        if (!tx) { showToast('❌ Data transaksi tidak ditemukan!', true); return; }
         editingId = id;
         document.getElementById('editTxType').value = tx.type;
         document.getElementById('editTxDesc').value = tx.description;
         document.getElementById('editTxAmount').value = tx.amount;
-        
         let dateValue = '';
         if (tx.date) {
             const d = new Date(tx.date);
             if (!isNaN(d.getTime())) {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                const hours = String(d.getHours()).padStart(2, '0');
-                const minutes = String(d.getMinutes()).padStart(2, '0');
-                dateValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+                dateValue = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             }
         }
         if (!dateValue) {
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            dateValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+            dateValue = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         }
         document.getElementById('editTxDate').value = dateValue;
-        
-        const modal = document.getElementById('editModal');
-        modal.classList.add('active');
+        document.getElementById('editModal').classList.add('active');
         document.body.classList.add('modal-open');
     }
     
     function closeEditModal() {
-        const modal = document.getElementById('editModal');
-        modal.classList.remove('active');
+        document.getElementById('editModal').classList.remove('active');
         document.body.classList.remove('modal-open');
         editingId = null;
     }
     
     function updateTransaction() {
-        if (editingId === null) {
-            showToast('Tidak ada transaksi yang sedang diedit', true);
-            return;
-        }
-        
+        if (editingId === null) { showToast('Tidak ada transaksi yang sedang diedit', true); return; }
         const newType = document.getElementById('editTxType').value;
         let newDesc = document.getElementById('editTxDesc').value;
         let newAmount = parseFloat(document.getElementById('editTxAmount').value);
         let newDateStr = document.getElementById('editTxDate').value;
-        
-        if (isNaN(newAmount) || newAmount <= 0) {
-            showToast('⚠️ Nominal harus lebih dari 0', true);
-            return;
-        }
-        if (!newDesc || newDesc.trim() === '') {
-            showToast('📝 Deskripsi tidak boleh kosong', true);
-            return;
-        }
-        if (!newDateStr) {
-            showToast('📅 Tanggal harus diisi', true);
-            return;
-        }
-        
+        if (isNaN(newAmount) || newAmount <= 0) { showToast('⚠️ Nominal harus lebih dari 0', true); return; }
+        if (!newDesc || newDesc.trim() === '') { showToast('📝 Deskripsi tidak boleh kosong', true); return; }
+        if (!newDateStr) { showToast('📅 Tanggal harus diisi', true); return; }
         newAmount = Math.floor(newAmount);
         const newDate = new Date(newDateStr);
-        if (isNaN(newDate.getTime())) {
-            showToast('📅 Format tanggal tidak valid', true);
-            return;
-        }
-        
+        if (isNaN(newDate.getTime())) { showToast('📅 Format tanggal tidak valid', true); return; }
         const index = transactions.findIndex(t => t.id === editingId);
-        
         if (index !== -1) {
             transactions[index].type = newType;
             transactions[index].description = newDesc.trim();
@@ -1336,331 +1312,172 @@
             updateStats();
             renderTransactions();
             closeEditModal();
-            animateElement(document.querySelector('.tx-list'));
             showToast('✅ Transaksi berhasil diperbarui!');
         } else {
-            showToast('❌ Gagal menemukan transaksi yang akan diedit', true);
+            showToast('❌ Gagal menemukan transaksi', true);
             closeEditModal();
         }
     }
 
-    // NAVIGATION FUNCTION
     function navigateTo(page) {
-        // Hide all pages
-        document.querySelectorAll('.page-container').forEach(container => {
-            container.classList.remove('active-page');
-        });
-        
-        // Show selected page
+        document.querySelectorAll('.page-container').forEach(c => c.classList.remove('active-page'));
         const targetPage = document.getElementById(`${page}Page`);
-        if (targetPage) {
-            targetPage.classList.add('active-page');
-        }
-        
-        // Update active nav item
+        if (targetPage) targetPage.classList.add('active-page');
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
-            if (item.getAttribute('data-page') === page) {
-                item.classList.add('active');
-            }
+            if (item.getAttribute('data-page') === page) item.classList.add('active');
         });
-        
         currentPage = page;
-        
-        // Refresh stats when on home page
-        if (page === 'home') {
-            updateStats();
-        }
-        
-        // Refresh transaction list when on history page
-        if (page === 'history') {
-            renderTransactions();
-        }
+        if (page === 'home') updateStats();
+        if (page === 'history') renderTransactions();
     }
 
-    // ========== FITUR GESER (SWIPE) UNTUK NAVIGASI ==========
-    let touchStartX = 0;
-    let touchEndX = 0;
-    let isSwiping = false;
+    let touchStartX = 0, touchEndX = 0, isSwiping = false;
     const MIN_SWIPE_DISTANCE = 50;
-
-    function handleTouchStart(e) {
-        touchStartX = e.changedTouches[0].screenX;
-        isSwiping = true;
-    }
-
-    function handleTouchMove(e) {
-        if (!isSwiping) return;
-        touchEndX = e.changedTouches[0].screenX;
-    }
-
+    function handleTouchStart(e) { touchStartX = e.changedTouches[0].screenX; isSwiping = true; }
+    function handleTouchMove(e) { if (isSwiping) touchEndX = e.changedTouches[0].screenX; }
     function handleTouchEnd(e) {
         if (!isSwiping) return;
         isSwiping = false;
-        
         if (touchStartX === 0 || touchEndX === 0) return;
-        
         const diffX = touchEndX - touchStartX;
-        
         if (Math.abs(diffX) < MIN_SWIPE_DISTANCE) return;
-        
         const pages = ['home', 'add', 'history', 'print'];
         const currentIndex = pages.indexOf(currentPage);
-        
-        if (diffX < 0) {
-            if (currentIndex < pages.length - 1) {
-                navigateTo(pages[currentIndex + 1]);
-            }
-        } else if (diffX > 0) {
-            if (currentIndex > 0) {
-                navigateTo(pages[currentIndex - 1]);
-            }
-        }
-        
-        touchStartX = 0;
-        touchEndX = 0;
+        if (diffX < 0 && currentIndex < pages.length - 1) navigateTo(pages[currentIndex + 1]);
+        else if (diffX > 0 && currentIndex > 0) navigateTo(pages[currentIndex - 1]);
+        touchStartX = 0; touchEndX = 0;
     }
-
     function initSwipeNavigation() {
         const mainContainer = document.getElementById('mainContainer');
         if (mainContainer) {
             mainContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
             mainContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
             mainContainer.addEventListener('touchend', handleTouchEnd);
-        } else {
-            document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
-            document.body.addEventListener('touchmove', handleTouchMove, { passive: true });
-            document.body.addEventListener('touchend', handleTouchEnd);
         }
     }
 
-    // ========== LAPORAN PDF & JPG ==========
+    // ========== EXPORT PDF & JPG YANG DIPERBAIKI - MENGGUNAKAN CLONE ELEMENT ==========
     function createReportElement() {
         const { income, expense, balance } = updateStats();
         const dateNow = new Date();
         const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const timeStr = dateNow.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         const logoUrl = "https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png";
         
+        // Buat container report
         const container = document.createElement('div');
-        container.className = 'report-container';
+        container.className = 'report-for-export';
         
-        const headerDiv = document.createElement('div');
-        headerDiv.style.padding = '0 0 16px 0';
-        headerDiv.style.borderBottom = '2px solid #0f3b5c';
-        headerDiv.style.marginBottom = '24px';
-        headerDiv.style.display = 'flex';
-        headerDiv.style.alignItems = 'center';
-        headerDiv.style.gap = '16px';
-        headerDiv.innerHTML = `
-            <div style="width: 52px; height: 52px; background: transparent; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                <img src="${logoUrl}" style="width: 100%; height: 100%; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:26px;\'>📖</span>';">
+        // Header
+        let headerHtml = `
+            <div class="header-section">
+                <div class="logo-area">
+                    <img src="${logoUrl}" alt="Logo" onerror="this.style.display='none'">
+                </div>
+                <div class="title-area">
+                    <h2>Laporan Keuangan Ngaji Selapanan</h2>
+                    <p>Alumni Assunniyyah • ${dateStr} • ${timeStr}</p>
+                </div>
             </div>
-            <div>
-                <h2 style="font-size: 1.15rem; margin:0; color:#0f3b5c; letter-spacing: -0.2px;">Laporan Keuangan Ngaji Selapanan</h2>
-                <p style="font-size:0.7rem; margin:4px 0 0; color:#475569; letter-spacing: 0.2px;">Alumni Assunniyyah • ${dateStr}</p>
+            <div class="stats-cards">
+                <div class="stat-item income-card">
+                    <div class="stat-label">💚 TOTAL PEMASUKAN</div>
+                    <div class="stat-value income">${formatRupiah(income)}</div>
+                </div>
+                <div class="stat-item expense-card">
+                    <div class="stat-label">❤️ TOTAL PENGELUARAN</div>
+                    <div class="stat-value expense">${formatRupiah(expense)}</div>
+                </div>
+                <div class="stat-item balance-card">
+                    <div class="stat-label">🌟 SALDO AKHIR</div>
+                    <div class="stat-value balance">${formatRupiah(balance)}</div>
+                </div>
             </div>
         `;
-        container.appendChild(headerDiv);
         
-        const statsDiv = document.createElement('div');
-        statsDiv.style.display = 'flex';
-        statsDiv.style.justifyContent = 'space-between';
-        statsDiv.style.gap = '16px';
-        statsDiv.style.marginBottom = '28px';
-        statsDiv.innerHTML = `
-            <div style="flex:1; background:#f8fafc; padding: 14px 10px; border-radius: 16px; text-align:center;">
-                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">💚 PEMASUKAN</div>
-                <div style="font-size:1rem; font-weight:800; color:#10b981; margin-top:6px;">${formatRupiah(income)}</div>
-            </div>
-            <div style="flex:1; background:#f8fafc; padding: 14px 10px; border-radius: 16px; text-align:center;">
-                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">❤️ PENGELUARAN</div>
-                <div style="font-size:1rem; font-weight:800; color:#ef4444; margin-top:6px;">${formatRupiah(expense)}</div>
-            </div>
-            <div style="flex:1; background:#f8fafc; padding: 14px 10px; border-radius: 16px; text-align:center;">
-                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">🌟 SALDO</div>
-                <div style="font-size:1rem; font-weight:800; color:#0f3b5c; margin-top:6px;">${formatRupiah(balance)}</div>
-            </div>
-        `;
-        container.appendChild(statsDiv);
+        // Table transaksi
+        let tableHtml = '';
+        const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        const table = document.createElement('table');
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-        table.style.fontSize = '0.75rem';
-        table.innerHTML = `
-            <thead>
-                <tr style="background:#f1f5f9; border-bottom: 1px solid #e2e8f0;">
-                    <th style="padding: 12px 10px; text-align:left; font-size:0.7rem; font-weight:700; color:#1e293b;">Tanggal</th>
-                    <th style="padding: 12px 10px; text-align:left; font-size:0.7rem; font-weight:700; color:#1e293b;">Deskripsi</th>
-                    <th style="padding: 12px 10px; text-align:left; font-size:0.7rem; font-weight:700; color:#1e293b;">Jenis</th>
-                    <th style="padding: 12px 10px; text-align:right; font-size:0.7rem; font-weight:700; color:#1e293b;">Nominal</th>
-                </tr>
-            </thead>
-            <tbody id="reportTableBody"></tbody>
-        `;
-        container.appendChild(table);
-        
-        const tbody = table.querySelector('#reportTableBody');
-        if (transactions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="padding:32px; text-align:center; color:#64748b;">Belum ada transaksi</td></tr>';
+        if (sortedTransactions.length === 0) {
+            tableHtml = `<div class="empty-data">✨ Belum ada transaksi tersedia ✨</div>`;
         } else {
-            const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-            sortedTransactions.forEach(tx => {
-                const row = document.createElement('tr');
-                row.style.borderBottom = '1px solid #e2e8f0';
-                row.innerHTML = `
-                    <td style="padding: 10px 10px; font-size:0.7rem; color:#334155;">${formatDateReport(tx.date)}</td>
-                    <td style="padding: 10px 10px; font-size:0.7rem; font-weight:500; color:#1e293b;">${escapeHtml(tx.description)}</td>
-                    <td style="padding: 10px 10px; font-size:0.7rem; color:#475569;">${tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
-                    <td style="padding: 10px 10px; font-size:0.75rem; text-align:right; font-weight:600; ${tx.type === 'income' ? 'color:#10b981' : 'color:#ef4444'}">${tx.type === 'income' ? '+' : '-'} ${formatRupiah(tx.amount)}</td>
+            let rowsHtml = '';
+            for (const tx of sortedTransactions) {
+                const amountColor = tx.type === 'income' ? '#10b981' : '#ef4444';
+                const amountSign = tx.type === 'income' ? '+' : '-';
+                rowsHtml += `
+                    <tr>
+                        <td>${formatDateReport(tx.date)}</td>
+                        <td><strong>${escapeHtml(tx.description)}</strong></td>
+                        <td>${tx.type === 'income' ? '📈 Pemasukan' : '📉 Pengeluaran'}</td>
+                        <td style="text-align: right; color: ${amountColor}; font-weight: 700;">${amountSign} ${formatRupiah(tx.amount)}</td>
+                    </tr>
                 `;
-                tbody.appendChild(row);
-            });
+            }
+            tableHtml = `
+                <table>
+                    <thead>
+                        <tr><th>Tanggal</th><th>Deskripsi</th><th>Jenis</th><th style="text-align: right;">Nominal</th></tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            `;
         }
         
-        const footer = document.createElement('div');
-        footer.style.textAlign = 'center';
-        footer.style.fontSize = '0.6rem';
-        footer.style.color = '#94a3b8';
-        footer.style.marginTop = '24px';
-        footer.style.padding = '12px 0 4px';
-        footer.style.borderTop = '1px solid #e2e8f0';
-        footer.innerText = 'Laporan resmi • Kasir Selapanan Alumni Assunniyyah';
-        container.appendChild(footer);
+        // Footer
+        let footerHtml = `
+            <div class="footer">
+                Laporan resmi • Kasir Selapanan Alumni Assunniyyah<br>
+                Dicetak: ${dateStr} ${timeStr}
+            </div>
+        `;
         
+        container.innerHTML = headerHtml + tableHtml + footerHtml;
         return container;
     }
 
     async function exportToPDF() {
-        const { income, expense, balance } = updateStats();
         const dateNow = new Date();
         const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).replace(/\s/g, '_');
-        const logoUrl = "https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png";
         
-        const pdfContainer = document.createElement('div');
-        pdfContainer.style.background = 'white';
-        pdfContainer.style.fontFamily = "'Inter', 'Segoe UI', system-ui, sans-serif";
-        pdfContainer.style.color = '#0f172a';
-        pdfContainer.style.width = '800px';
-        pdfContainer.style.lineHeight = '1.5';
-        pdfContainer.style.letterSpacing = '0.2px';
-        pdfContainer.style.padding = '20px';
+        showToast('📄 Sedang menyiapkan PDF...');
         
-        function getPageHeader(pageNum) {
-            return `
-                <div style="padding: 20px 24px 12px 24px; border-bottom: 2px solid #0f3b5c; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
-                    <div style="width: 48px; height: 48px; background: transparent; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <img src="${logoUrl}" style="width: 100%; height: 100%; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:24px;\'>📖</span>';">
-                    </div>
-                    <div>
-                        <h2 style="font-size: 1.1rem; margin:0; color:#0f3b5c; letter-spacing: -0.2px;">Laporan Keuangan Ngaji Selapanan</h2>
-                        <p style="font-size:0.7rem; margin:4px 0 0; color:#475569; letter-spacing:0.3px;">Alumni Assunniyyah • ${dateNow.toLocaleDateString('id-ID')} ${pageNum > 1 ? `(Halaman ${pageNum})` : ''}</p>
-                    </div>
-                </div>
-            `;
-        }
+        const reportElement = createReportElement();
+        reportElement.style.position = 'absolute';
+        reportElement.style.left = '-9999px';
+        reportElement.style.top = '0';
+        document.body.appendChild(reportElement);
         
-        const sortedTxs = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
-        
-        let allRowsHtml = '';
-        sortedTxs.forEach(tx => {
-            allRowsHtml += `
-                <tr>
-                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.7rem; color:#334155;">${formatDateReport(tx.date)}</td>
-                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.7rem; font-weight:500; color:#1e293b;">${escapeHtml(tx.description)}</td>
-                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.7rem; color:#475569;">${tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
-                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.75rem; text-align:right; font-weight:600; ${tx.type === 'income' ? 'color:#10b981' : 'color:#ef4444'}">${tx.type === 'income' ? '+' : '-'} ${formatRupiah(tx.amount)}</td>
-                </tr>
-            `;
-        });
-        
-        if (transactions.length === 0) {
-            allRowsHtml = '<tr><td colspan="4" style="padding:32px; text-align:center; color:#64748b;">Belum ada transaksi</td></tr>';
-        }
-        
-        const maxRowsPerPage = 14;
-        const rowsArray = [];
-        const tbodyRegex = /<tr[\s\S]*?<\/tr>/g;
-        const matches = allRowsHtml.match(tbodyRegex) || [];
-        
-        let tempRows = '';
-        let count = 0;
-        for (let i = 0; i < matches.length; i++) {
-            if (count === 0) tempRows = '';
-            tempRows += matches[i];
-            count++;
-            if (count >= maxRowsPerPage || i === matches.length - 1) {
-                rowsArray.push(tempRows);
-                tempRows = '';
-                count = 0;
-            }
-        }
-        
-        for (let pageIdx = 0; pageIdx < rowsArray.length; pageIdx++) {
-            const pageNum = pageIdx + 1;
-            let pageContent = `<div style="page-break-after: ${pageIdx === rowsArray.length - 1 ? 'avoid' : 'always'}; page-break-inside: avoid;">`;
-            pageContent += getPageHeader(pageNum);
-            
-            if (pageIdx === 0) {
-                pageContent += `
-                    <div style="padding: 0 24px;">
-                        <div style="display: flex; justify-content: space-between; gap: 16px; margin-bottom: 24px;">
-                            <div style="flex:1; background:#f8fafc; padding: 14px 12px; border-radius: 16px; text-align:center;">
-                                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">💚 PEMASUKAN</div>
-                                <div style="font-size:1rem; font-weight:800; color:#10b981; margin-top:6px;">${formatRupiah(income)}</div>
-                            </div>
-                            <div style="flex:1; background:#f8fafc; padding: 14px 12px; border-radius: 16px; text-align:center;">
-                                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">❤️ PENGELUARAN</div>
-                                <div style="font-size:1rem; font-weight:800; color:#ef4444; margin-top:6px;">${formatRupiah(expense)}</div>
-                            </div>
-                            <div style="flex:1; background:#f8fafc; padding: 14px 12px; border-radius: 16px; text-align:center;">
-                                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">🌟 SALDO</div>
-                                <div style="font-size:1rem; font-weight:800; color:#0f3b5c; margin-top:6px;">${formatRupiah(balance)}</div>
-                            </div>
-                        </div>
-                        <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
-                            <thead><tr style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;"><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Tanggal</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Deskripsi</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Jenis</th><th style="padding: 12px 12px; text-align:right; font-size:0.7rem;">Nominal</th></tr></thead>
-                            <tbody>${rowsArray[pageIdx]}</tbody>
-                        </table>
-                    </div>
-                `;
-            } else {
-                pageContent += `
-                    <div style="padding: 0 24px;">
-                        <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
-                            <thead><tr style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;"><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Tanggal</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Deskripsi</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Jenis</th><th style="padding: 12px 12px; text-align:right; font-size:0.7rem;">Nominal</th></tr></thead>
-                            <tbody>${rowsArray[pageIdx]}</tbody>
-                        </table>
-                    </div>
-                `;
-            }
-            
-            pageContent += `<div style="text-align:center; font-size:0.6rem; color:#94a3b8; margin-top: 28px; padding: 12px 0 20px; border-top:1px solid #e2e8f0;">Laporan resmi • Kasir Selapanan Alumni Assunniyyah</div></div>`;
-            pdfContainer.innerHTML += pageContent;
-        }
-        
-        // Tambahkan ke body dengan posisi di luar layar
-        pdfContainer.style.position = 'fixed';
-        pdfContainer.style.top = '-9999px';
-        pdfContainer.style.left = '0';
-        document.body.appendChild(pdfContainer);
+        // Tunggu gambar logo termuat
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         try {
             const opt = {
                 margin: [0.5, 0.5, 0.5, 0.5],
                 filename: `laporan_keuangan_${dateStr}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 3, letterRendering: true, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2.5, 
+                    letterRendering: true, 
+                    useCORS: true, 
+                    logging: false, 
+                    backgroundColor: '#ffffff'
+                },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
-            await html2pdf().set(opt).from(pdfContainer).save();
-            showToast(`✅ PDF berhasil dibuat! ${rowsArray.length} halaman`);
+            
+            await html2pdf().set(opt).from(reportElement).save();
+            showToast('✅ PDF berhasil disimpan');
         } catch (err) {
-            console.error(err);
-            showToast('❌ Gagal generate PDF', true);
+            console.error('PDF Error:', err);
+            showToast('❌ Gagal generate PDF: ' + err.message, true);
         } finally {
-            if (pdfContainer && pdfContainer.remove) {
-                pdfContainer.remove();
+            if (reportElement && reportElement.remove) {
+                reportElement.remove();
             }
         }
     }
@@ -1669,15 +1486,15 @@
         const dateNow = new Date();
         const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).replace(/\s/g, '_');
         
-        const reportElement = createReportElement();
+        showToast('🖼️ Sedang menyiapkan gambar...');
         
-        // Tambahkan ke body dengan posisi di luar layar (tetap berukuran normal)
-        reportElement.style.position = 'fixed';
-        reportElement.style.top = '-9999px';
-        reportElement.style.left = '0';
-        reportElement.style.visibility = 'visible';
-        reportElement.style.opacity = '1';
+        const reportElement = createReportElement();
+        reportElement.style.position = 'absolute';
+        reportElement.style.left = '-9999px';
+        reportElement.style.top = '0';
         document.body.appendChild(reportElement);
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         try {
             const canvas = await html2canvas(reportElement, {
@@ -1685,19 +1502,19 @@
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 logging: false,
-                letterRendering: true,
-                windowWidth: reportElement.scrollWidth,
-                windowHeight: reportElement.scrollHeight
+                letterRendering: true
             });
             
-            const link = document.createElement('a');
-            link.download = `laporan_keuangan_${dateStr}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 1.0);
-            link.click();
-            
-            showToast('✅ Laporan berhasil diunduh sebagai JPG');
+            canvas.toBlob(blob => {
+                if (blob) {
+                    saveAs(blob, `laporan_keuangan_${dateStr}.jpg`);
+                    showToast('✅ JPG berhasil disimpan');
+                } else {
+                    showToast('❌ Gagal generate gambar', true);
+                }
+            }, 'image/jpeg', 0.95);
         } catch (err) {
-            console.error(err);
+            console.error('JPG Error:', err);
             showToast('❌ Gagal generate gambar', true);
         } finally {
             if (reportElement && reportElement.remove) {
@@ -1706,142 +1523,66 @@
         }
     }
 
-    // ========== DARK MODE OTOMATIS BERDASARKAN WAKTU LOKAL ==========
-    function getLocalHour() {
-        const now = new Date();
-        // Mendapatkan jam dalam zona waktu lokal pengguna
-        return now.getHours();
-    }
-
-    function isDayTime() {
-        const hour = getLocalHour();
-        // Siang dari jam 06:00 sampai 18:00 (jam 6 sampai 17:59)
-        return hour >= 6 && hour < 18;
-    }
-
+    // Dark Mode berdasarkan waktu
+    function getLocalHour() { return new Date().getHours(); }
+    function isDayTime() { const hour = getLocalHour(); return hour >= 6 && hour < 18; }
     function setDarkMode(isDark) {
-        if (isDark) {
-            document.body.classList.add('dark');
-        } else {
-            document.body.classList.remove('dark');
-        }
+        if (isDark) document.body.classList.add('dark');
+        else document.body.classList.remove('dark');
         localStorage.setItem('darkModePreference', isDark ? 'dark' : 'light');
-        updateDarkButtonUI(isDark);
-    }
-
-    function updateDarkButtonUI(isDark) {
         const iconSpan = document.getElementById('darkIcon');
         const textSpan = document.getElementById('darkText');
         if (iconSpan) iconSpan.textContent = isDark ? '☀️' : '🌙';
         if (textSpan) textSpan.textContent = isDark ? 'Light' : 'Dark';
     }
-
-    function getSystemDarkMode() {
-        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-
-    // Fungsi untuk menentukan dark mode berdasarkan waktu lokal
-    function getDarkModeByTime() {
-        return !isDayTime(); // Malam hari (18:00 - 05:59) = dark mode
-    }
-
+    function getDarkModeByTime() { return !isDayTime(); }
     function initDarkMode() {
         const saved = localStorage.getItem('darkModePreference');
         let isDark = false;
-        
-        if (saved === 'dark') {
-            isDark = true;
-        } else if (saved === 'light') {
-            isDark = false;
-        } else {
-            // Tidak ada preferensi tersimpan, gunakan mode berdasarkan waktu lokal
-            isDark = getDarkModeByTime();
-        }
-        
+        if (saved === 'dark') isDark = true;
+        else if (saved === 'light') isDark = false;
+        else isDark = getDarkModeByTime();
         setDarkMode(isDark);
-        
-        // Update setiap jam untuk mengecek perubahan waktu (siang/malam)
         setInterval(() => {
             const savedManual = localStorage.getItem('darkModePreference');
-            // Hanya update otomatis jika user belum menyimpan preferensi manual
             if (savedManual !== 'dark' && savedManual !== 'light') {
                 const newDarkMode = getDarkModeByTime();
                 const currentDarkMode = document.body.classList.contains('dark');
-                if (newDarkMode !== currentDarkMode) {
-                    setDarkMode(newDarkMode);
-                    showToast(`🌓 Dark mode otomatis berubah mengikuti waktu ${newDarkMode ? 'malam' : 'siang'}`, false);
-                }
+                if (newDarkMode !== currentDarkMode) setDarkMode(newDarkMode);
             }
-        }, 60000); // Cek setiap menit, tapi hanya akan berubah jika melewati batas jam 6 atau 18
-        
-        const btn = document.getElementById('darkModeBtn');
-        btn.addEventListener('click', () => {
+        }, 60000);
+        document.getElementById('darkModeBtn').addEventListener('click', () => {
             const currentlyDark = document.body.classList.contains('dark');
             setDarkMode(!currentlyDark);
-            showToast(`🌓 Dark mode ${!currentlyDark ? 'aktif' : 'nonaktif'} (manual)`, false);
+            showToast(`🌓 Dark mode ${!currentlyDark ? 'aktif' : 'nonaktif'}`, false);
         });
     }
 
     function setupEvents() {
-        // Tombol simpan
-        document.getElementById('saveBtn').addEventListener('click', (e) => {
+        document.getElementById('saveBtn').addEventListener('click', () => {
             const type = document.getElementById('txType').value;
             const desc = document.getElementById('txDesc').value;
             const amount = document.getElementById('txAmount').value;
-            if (addTransaction(type, desc, amount, e)) {
+            if (addTransaction(type, desc, amount)) {
                 document.getElementById('txDesc').value = '';
                 document.getElementById('txAmount').value = '';
                 document.getElementById('txDesc').focus();
-                updateStats();
             }
         });
-        
-        // Tombol reset - buka modal konfirmasi
         document.getElementById('resetBtn').addEventListener('click', openResetConfirmModal);
-        
-        // Tombol konfirmasi reset
         document.getElementById('confirmResetBtn').addEventListener('click', executeResetData);
-        
-        // Tombol batal reset
         document.getElementById('cancelResetBtn').addEventListener('click', closeResetConfirmModal);
-        
-        // Tutup modal reset jika klik overlay
-        document.getElementById('confirmResetModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('confirmResetModal')) {
-                closeResetConfirmModal();
-            }
-        });
-        
-        // Tombol konfirmasi hapus transaksi
+        document.getElementById('confirmResetModal').addEventListener('click', (e) => { if (e.target === document.getElementById('confirmResetModal')) closeResetConfirmModal(); });
         document.getElementById('confirmDeleteBtn').addEventListener('click', executeDeleteTransaction);
-        
-        // Tombol batal hapus
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteConfirmModal);
-        
-        // Tutup modal hapus jika klik overlay
-        document.getElementById('confirmDeleteModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('confirmDeleteModal')) {
-                closeDeleteConfirmModal();
-            }
-        });
-        
-        // Export buttons
+        document.getElementById('confirmDeleteModal').addEventListener('click', (e) => { if (e.target === document.getElementById('confirmDeleteModal')) closeDeleteConfirmModal(); });
         document.getElementById('exportBtnCard').addEventListener('click', exportToPDF);
         document.getElementById('exportJpgBtnCard').addEventListener('click', exportToJPG);
-        
-        // Modal edit
         document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
         document.getElementById('updateBtn').addEventListener('click', updateTransaction);
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('editModal')) closeEditModal();
-        });
-        
-        // Navigation
+        document.getElementById('editModal').addEventListener('click', (e) => { if (e.target === document.getElementById('editModal')) closeEditModal(); });
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const page = item.getAttribute('data-page');
-                navigateTo(page);
-            });
+            item.addEventListener('click', () => navigateTo(item.getAttribute('data-page')));
         });
     }
 
