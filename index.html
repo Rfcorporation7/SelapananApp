@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Kasir Selapanan | Alumni Assunniyyah - High Resolution</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- html2pdf bundle & html2canvas untuk JPG -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Sembunyikan elemen sementara untuk export - TIDAK TERLIHAT TAPI TETAP BERUKURAN NORMAL */
+        .export-temp-element {
+            position: fixed !important;
+            top: -9999px !important;
+            left: 0 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+            width: auto !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        /* HILANGKAN EFEK BIRU PADA SEMUA ELEMEN YANG BISA DI KLIK */
+        button:focus, button:active, 
+        .btn-save:focus, .btn-save:active, 
+        .dark-toggle:focus, .dark-toggle:active, 
+        .btn-export:focus, .btn-export:active,
+        .btn-jpg:focus, .btn-jpg:active, 
+        .btn-reset:focus, .btn-reset:active,
+        .btn-delete:focus, .btn-delete:active,
+        .btn-edit:focus, .btn-edit:active, 
+        input:focus, select:focus, textarea:focus,
+        .nav-item:focus, .nav-item:active,
+        .export-card:focus, .export-card:active,
+        .stat-card:focus, .stat-card:active {
+            outline: none !important;
+            box-shadow: none !important;
+            border-color: transparent !important;
+        }
+
+        /* Hilangkan efek highlight biru di mobile (webkit) */
+        button, .btn-save, .dark-toggle, .btn-export, .btn-jpg, .btn-reset, .btn-delete, .btn-edit, .nav-item, .export-card, .stat-card {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        /* Untuk input tetap ada sedikit fokus tapi tanpa biru */
+        .field input:focus, .field select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15) !important;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        :root {
+            --bg-page: #f4f7fc;
+            --bg-surface: #ffffff;
+            --text-main: #1e293b;
+            --text-second: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --income: #10b981;
+            --expense: #ef4444;
+            --primary: #0f3b5c;
+            --primary-light: #1e4d72;
+            --input-bg: #ffffff;
+            --header-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            --logo-border: #cbd5e1;
+            --nav-active: #0f3b5c;
+            --nav-inactive: #94a3b8;
+        }
+
+        body.dark {
+            --bg-page: #0f172a;
+            --bg-surface: #1e293b;
+            --text-main: #f1f5f9;
+            --text-second: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --primary: #3b82f6;
+            --primary-light: #2563eb;
+            --input-bg: #0f172a;
+            --header-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --logo-border: #475569;
+            --nav-active: #3b82f6;
+            --nav-inactive: #64748b;
+        }
+
+        body {
+            background: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            transition: background 0.3s ease, color 0.2s ease;
+            padding-bottom: 70px;
+        }
+
+        /* HEADER */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--header-shadow);
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 12px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            border: 2px solid var(--logo-border);
+            border-radius: 12px;
+            padding: 4px;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-text h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+
+        .sub-name {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 2px;
+            letter-spacing: 0.2px;
+        }
+
+        .dark-toggle {
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            padding: 7px 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-second);
+            transition: all 0.2s;
+        }
+
+        .dark-toggle:hover {
+            background: var(--primary-soft);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* MAIN CONTENT */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 20px 80px;
+        }
+
+        /* Page Container */
+        .page-container {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .page-container.active-page {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* STATS CARDS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 36px;
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            border-radius: 24px;
+            padding: 22px 26px;
+            border: 1px solid var(--border-color);
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.12);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .stat-number.income { color: var(--income); }
+        .stat-number.expense { color: var(--expense); }
+        .stat-number.balance {
+            background: linear-gradient(135deg, var(--income), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Kata Mutiara */
+        .wisdom-box {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-top: 24px;
+            text-align: center;
+            color: white;
+        }
+        .wisdom-text {
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.5;
+            font-style: italic;
+        }
+        .wisdom-author {
+            font-size: 0.75rem;
+            margin-top: 12px;
+            opacity: 0.9;
+        }
+        .wisdom-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        /* FORM SECTION */
+        .form-section {
+            background: var(--bg-surface);
+            border-radius: 28px;
+            border: 1px solid var(--border-color);
+            padding: 28px 32px;
+            transition: box-shadow 0.2s;
+        }
+
+        .form-section:focus-within {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-header span {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1.5fr auto;
+            gap: 18px;
+            align-items: end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .form-hint {
+            margin-top: 18px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* EXPORT BUTTONS */
+        .export-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .export-card {
+            background: var(--bg-surface);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .export-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .export-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .export-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+        .export-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .export-pdf .export-icon { color: #ef4444; }
+        .export-jpg .export-icon { color: #10b981; }
+
+        /* HISTORY SECTION */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .history-header h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .btn-reset {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: rgba(239,68,68,0.1);
+            border-color: var(--expense);
+            color: var(--expense);
+        }
+
+        .tx-list {
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            background: var(--bg-surface);
+        }
+
+        .tx-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 16px;
+            flex-wrap: wrap;
+            transition: background 0.15s;
+        }
+
+        .tx-item:last-child { border-bottom: none; }
+        .tx-item:hover { background: var(--bg-page); }
+
+        .tx-info { flex: 2; }
+        .tx-desc { font-weight: 700; font-size: 0.9rem; }
+        .tx-date { font-size: 0.6rem; color: var(--text-muted); margin-top: 5px; }
+
+        .tx-amount {
+            font-weight: 800;
+            font-size: 1rem;
+            min-width: 130px;
+            text-align: right;
+        }
+        .tx-income { color: var(--income); }
+        .tx-expense { color: var(--expense); }
+
+        .btn-delete, .btn-edit {
+            background: transparent;
+            border: none;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 30px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-delete:hover {
+            background: rgba(239,68,68,0.1);
+            color: var(--expense);
+        }
+        .btn-edit:hover {
+            background: rgba(59,130,246,0.1);
+            color: var(--primary);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 56px 20px;
+            color: var(--text-muted);
+        }
+
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 16px 12px;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            background: rgba(var(--bg-surface-rgb, 255,255,255), 0.95);
+        }
+        body.dark .bottom-nav {
+            background: rgba(30,41,59,0.95);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            color: var(--nav-inactive);
+        }
+        .nav-item i {
+            font-size: 1.4rem;
+        }
+        .nav-item span {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: var(--nav-active);
+            background: rgba(var(--primary-rgb, 15,59,92), 0.1);
+        }
+        body.dark .nav-item.active {
+            background: rgba(59,130,246,0.2);
+        }
+
+        @keyframes slideFade {
+            0% { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .magic-pop { animation: slideFade 0.25s ease-out; }
+
+        .report-container {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+            letter-spacing: normal;
+            font-weight: normal;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            background: white;
+            width: 800px;
+            padding: 28px 30px;
+        }
+        .report-container table {
+            font-family: inherit;
+        }
+        .report-container td, .report-container th {
+            letter-spacing: 0.2px;
+            font-weight: 500;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .edit-modal, .confirm-modal, .delete-confirm-modal {
+            background: var(--bg-surface);
+            border-radius: 28px;
+            width: 90%;
+            max-width: 450px;
+            padding: 28px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.3);
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.active .edit-modal,
+        .modal-overlay.active .confirm-modal,
+        .modal-overlay.active .delete-confirm-modal {
+            transform: scale(1);
+        }
+        .edit-modal h3, .confirm-modal h3, .delete-confirm-modal h3 {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+        .edit-modal .field {
+            margin-bottom: 18px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .confirm-modal .modal-buttons,
+        .delete-confirm-modal .modal-buttons {
+            justify-content: center;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: var(--text-second);
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover {
+            background: var(--bg-page);
+        }
+        .btn-update {
+            background: var(--primary);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-update:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: #ef4444;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        .confirm-message {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--text-second);
+            line-height: 1.6;
+        }
+        .confirm-icon {
+            font-size: 3rem;
+            color: #ef4444;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .delete-confirm-modal .confirm-icon {
+            color: #ef4444;
+        }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 780px) {
+            .form-grid { grid-template-columns: 1fr; gap: 14px; }
+            .stats-row { gap: 12px; }
+            .stat-number { font-size: 1.4rem; }
+            .main-container { padding: 16px 16px 80px; }
+            .form-section { padding: 20px; }
+            .header-inner { padding: 10px 16px; }
+            .logo-wrapper { width: 38px; height: 38px; }
+            .brand-text h1 { font-size: 1rem; }
+            .sub-name { font-size: 0.6rem; }
+            .action-buttons { margin-top: 8px; width: 100%; justify-content: flex-start; }
+            .tx-item { flex-direction: column; align-items: flex-start; }
+            .tx-amount { text-align: left; }
+            .export-card { padding: 16px; }
+            .export-icon { font-size: 1.8rem; }
+            .toast-notification { white-space: normal; text-align: center; max-width: 90%; }
+        }
+        @media (max-width: 580px) {
+            .stats-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <div class="header-inner">
+        <div class="brand">
+            <div class="logo-wrapper">
+                <img class="logo-img" id="headerLogo" src="https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png" alt="Logo Assunniyyah" 
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/48?text=Logo';">
+            </div>
+            <div class="brand-text">
+                <h1>Ngaji Selapanan</h1>
+                <div class="sub-name">Alumni Assunniyyah</div>
+            </div>
+        </div>
+        <button class="dark-toggle" id="darkModeBtn">
+            <span id="darkIcon">🌙</span>
+            <span id="darkText">Dark Mode</span>
+        </button>
+    </div>
+</header>
+
+<main class="main-container" id="mainContainer">
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page-container active-page">
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-label">💚 Total Pemasukan</div><div class="stat-number income" id="totalIncome">Rp 0</div></div>
+            <div class="stat-card"><div class="stat-label">❤️ Total Pengeluaran</div><div class="stat-number expense" id="totalExpense">Rp 0</div></div>
+            <div class="stat-card"><div class="stat-label">🌟 Saldo Akhir</div><div class="stat-number balance" id="balanceAmount">Rp 0</div></div>
+        </div>
+        <div class="wisdom-box" id="homeWisdomBox">
+            <div class="wisdom-icon">🌙</div>
+            <div class="wisdom-text" id="wisdomTextHome">Barang siapa yang memberi kemudahan kepada orang yang kesulitan, maka Allah akan memudahkannya di dunia dan akhirat.</div>
+            <div class="wisdom-author" id="wisdomAuthorHome">- HR. Muslim</div>
+        </div>
+    </div>
+
+    <!-- TAMBAH DATA PAGE -->
+    <div id="addPage" class="page-container">
+        <div class="form-section">
+            <div class="form-header">
+                <span>✍️ TAMBAH TRANSAKSI BARU</span>
+            </div>
+            <div class="form-grid">
+                <div class="field">
+                    <label>Jenis Transaksi</label>
+                    <select id="txType">
+                        <option value="income">📈 Pemasukan (Kas Masuk)</option>
+                        <option value="expense">📉 Pengeluaran (Kas Keluar)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Deskripsi / Keterangan</label>
+                    <input type="text" id="txDesc" placeholder="Contoh: Infak, belanja, iuran santri..." autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Nominal (Rp)</label>
+                    <input type="number" id="txAmount" placeholder="0" step="1000">
+                </div>
+                <div class="field">
+                    <button class="btn-save" id="saveBtn">✨ Simpan Transaksi</button>
+                </div>
+            </div>
+            <div class="form-hint">
+                <span>💾</span> Data otomatis tersimpan di penyimpanan browser — Aman meskipun ditutup
+            </div>
+        </div>
+    </div>
+
+    <!-- RIWAYAT PAGE -->
+    <div id="historyPage" class="page-container">
+        <div class="history-header">
+            <h3>📜 RIWAYAT TRANSAKSI</h3>
+            <button class="btn-reset" id="resetBtn">🗑 Reset Semua Data</button>
+        </div>
+        <div class="tx-list" id="txListContainer">
+            <div class="empty-state">✨ Belum ada transaksi. Mulai catat pemasukan atau pengeluaran ✨</div>
+        </div>
+    </div>
+
+    <!-- CETAK PAGE -->
+    <div id="printPage" class="page-container">
+        <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; text-align: center;">📄 EXPORT LAPORAN KEUANGAN</h3>
+        </div>
+        <div class="export-buttons">
+            <div class="export-card export-pdf" id="exportBtnCard">
+                <div class="export-icon"><i class="fas fa-file-pdf"></i></div>
+                <div class="export-title">Export PDF</div>
+                <div class="export-desc">Multi halaman, siap cetak</div>
+            </div>
+            <div class="export-card export-jpg" id="exportJpgBtnCard">
+                <div class="export-icon"><i class="fas fa-image"></i></div>
+                <div class="export-title">Download JPG</div>
+                <div class="export-desc">Simpan sebagai gambar</div>
+            </div>
+        </div>
+        <div class="wisdom-box" style="margin-top: 20px;">
+            <div class="wisdom-icon">📖</div>
+            <div class="wisdom-text" id="wisdomTextPrint">Keutamaan ilmu lebih baik daripada keutamaan ibadah, dan sebaik-baik agamamu adalah rasa takut kepada Allah.</div>
+            <div class="wisdom-author" id="wisdomAuthorPrint">- HR. Hakim</div>
+        </div>
+    </div>
+</main>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="bottom-nav">
+    <button class="nav-item" data-page="home">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+    </button>
+    <button class="nav-item" data-page="add">
+        <i class="fas fa-plus-circle"></i>
+        <span>Tambah</span>
+    </button>
+    <button class="nav-item" data-page="history">
+        <i class="fas fa-history"></i>
+        <span>Riwayat</span>
+    </button>
+    <button class="nav-item" data-page="print">
+        <i class="fas fa-print"></i>
+        <span>Cetak</span>
+    </button>
+</div>
+
+<!-- MODAL EDIT -->
+<div id="editModal" class="modal-overlay">
+    <div class="edit-modal">
+        <h3><i class="fas fa-pen"></i> Edit Transaksi</h3>
+        <div class="field">
+            <label>Jenis Transaksi</label>
+            <select id="editTxType">
+                <option value="income">📈 Pemasukan (Kas Masuk)</option>
+                <option value="expense">📉 Pengeluaran (Kas Keluar)</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Deskripsi / Keterangan</label>
+            <input type="text" id="editTxDesc" placeholder="Deskripsi" autocomplete="off">
+        </div>
+        <div class="field">
+            <label>Nominal (Rp)</label>
+            <input type="number" id="editTxAmount" placeholder="0" step="1000">
+        </div>
+        <div class="field">
+            <label>Tanggal Transaksi</label>
+            <input type="datetime-local" id="editTxDate">
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="cancelEditBtn">Batal</button>
+            <button class="btn-update" id="updateBtn">Simpan Perubahan</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL KONFIRMASI RESET DATA -->
+<div id="confirmResetModal" class="modal-overlay">
+    <div class="confirm-modal">
+        <div class="confirm-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 style="justify-content: center;">Konfirmasi Reset Data</h3>
+        <div class="confirm-message">
+            <p>Apakah Anda yakin ingin menghapus <strong>semua data transaksi</strong>?</p>
+            <p style="font-size: 0.8rem; margin-top: 8px;">Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="cancelResetBtn">Batal</button>
+            <button class="btn-danger" id="confirmResetBtn">Ya, Hapus Semua</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS TRANSAKSI -->
+<div id="confirmDeleteModal" class="modal-overlay">
+    <div class="delete-confirm-modal">
+        <div class="confirm-icon">
+            <i class="fas fa-trash-alt"></i>
+        </div>
+        <h3 style="justify-content: center;">Konfirmasi Hapus</h3>
+        <div class="confirm-message">
+            <p>Apakah Anda yakin ingin menghapus transaksi:</p>
+            <p style="font-weight: 700; margin-top: 8px; background: var(--bg-page); padding: 8px; border-radius: 12px;" id="deleteTxDesc">-</p>
+            <p style="font-size: 0.8rem; margin-top: 8px;">Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="cancelDeleteBtn">Batal</button>
+            <button class="btn-danger" id="confirmDeleteBtn">Ya, Hapus</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toastMessage" class="toast-notification"></div>
+
+<script>
+    let transactions = [];
+    let editingId = null;
+    let currentPage = 'home';
+    let pendingDeleteId = null; // Untuk menyimpan ID transaksi yang akan dihapus
+
+    // Toast notification function (menggantikan alert)
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toastMessage');
+        toast.textContent = message;
+        toast.style.background = isError ? '#ef4444' : 'var(--primary)';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+
+    // Kumpulan kata mutiara untuk semangat berkhidmah
+    const wisdomQuotes = [
+        { text: "Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain", author: "- HR. Thabrani" },
+        { text: "Barang siapa yang memberi kemudahan kepada orang yang kesulitan, maka Allah akan memudahkannya di dunia dan akhirat", author: "- HR. Muslim" },
+        { text: "Keutamaan ilmu lebih baik daripada keutamaan ibadah, dan sebaik-baik agamamu adalah rasa takut kepada Allah", author: "- HR. Hakim" },
+        { text: "Senyummu di hadapan saudaramu adalah sedekah", author: "- HR. Tirmidzi" },
+        { text: "Janganlah kalian saling mendengki, saling membenci, saling memusuhi, dan jadilah hamba Allah yang bersaudara", author: "- HR. Bukhari Muslim" },
+        { text: "Barang siapa beriman kepada Allah dan hari akhir, hendaklah dia berkata yang baik atau diam", author: "- HR. Bukhari Muslim" },
+        { text: "Allah akan menolong seorang hamba selama hamba tersebut menolong saudaranya", author: "- HR. Muslim" },
+        { text: "Sebaik-baik kalian adalah yang paling baik akhlaknya", author: "- HR. Bukhari" },
+        { text: "Nikmat yang paling utama adalah hati yang qana'ah", author: "- HR. Bukhari" },
+        { text: "Bekerjalah untuk duniamu seolah engkau akan hidup selamanya, dan beramallah untuk akhiratmu seolah engkau akan mati besok", author: "- HR. Ibnu Majah" }
+    ];
+
+    function getDailyWisdom() {
+        const today = new Date();
+        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+        const index = dayOfYear % wisdomQuotes.length;
+        return wisdomQuotes[index];
+    }
+
+    function updateWisdomTexts() {
+        const wisdom = getDailyWisdom();
+        const homeWisdomText = document.getElementById('wisdomTextHome');
+        const homeWisdomAuthor = document.getElementById('wisdomAuthorHome');
+        const printWisdomText = document.getElementById('wisdomTextPrint');
+        const printWisdomAuthor = document.getElementById('wisdomAuthorPrint');
+        
+        if (homeWisdomText) homeWisdomText.innerText = wisdom.text;
+        if (homeWisdomAuthor) homeWisdomAuthor.innerText = wisdom.author;
+        if (printWisdomText) printWisdomText.innerText = wisdom.text;
+        if (printWisdomAuthor) printWisdomAuthor.innerText = wisdom.author;
+    }
+
+    function formatRupiah(num) {
+        if (isNaN(num)) num = 0;
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+    }
+
+    function updateStats() {
+        let income = 0, expense = 0;
+        for (let t of transactions) {
+            if (t.type === 'income') income += t.amount;
+            else expense += t.amount;
+        }
+        const balance = income - expense;
+        const totalIncomeEl = document.getElementById('totalIncome');
+        const totalExpenseEl = document.getElementById('totalExpense');
+        const balanceAmountEl = document.getElementById('balanceAmount');
+        if (totalIncomeEl) totalIncomeEl.innerText = formatRupiah(income);
+        if (totalExpenseEl) totalExpenseEl.innerText = formatRupiah(expense);
+        if (balanceAmountEl) balanceAmountEl.innerText = formatRupiah(balance);
+        return { income, expense, balance };
+    }
+
+    function formatDate(iso) {
+        if (!iso) return 'baru';
+        const d = new Date(iso);
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function formatDateReport(iso) {
+        if (!iso) return '-';
+        const d = new Date(iso);
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+    }
+
+    function generateId() {
+        return Date.now() + Math.floor(Math.random() * 10000);
+    }
+
+    function renderTransactions() {
+        const container = document.getElementById('txListContainer');
+        if (!container) return;
+        if (transactions.length === 0) {
+            container.innerHTML = `<div class="empty-state">✨ Belum ada transaksi. Mulai catat pemasukan atau pengeluaran ✨</div>`;
+            return;
+        }
+        let html = '';
+        const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        sortedTransactions.forEach(tx => {
+            const amountClass = tx.type === 'income' ? 'tx-income' : 'tx-expense';
+            const prefix = tx.type === 'income' ? '+' : '−';
+            const txId = tx.id;
+            html += `
+                <div class="tx-item" data-id="${txId}">
+                    <div class="tx-info">
+                        <div class="tx-desc">${escapeHtml(tx.description)}</div>
+                        <div class="tx-date">📅 ${formatDate(tx.date)}</div>
+                    </div>
+                    <div class="tx-amount ${amountClass}">${prefix} ${formatRupiah(tx.amount)}</div>
+                    <div class="action-buttons">
+                        <button class="btn-edit" data-id="${txId}"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="btn-delete" data-id="${txId}"><i class="fas fa-trash"></i> Hapus</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute('data-id'));
+                if (id && !isNaN(id)) {
+                    openDeleteConfirmModal(id);
+                }
+            });
+        });
+        
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute('data-id'));
+                if (id && !isNaN(id)) {
+                    openEditModal(id);
+                }
+            });
+        });
+    }
+
+    function persist() { 
+        localStorage.setItem('kasir_assunniyyah_final_hd', JSON.stringify(transactions)); 
+    }
+
+    function loadData() {
+        const stored = localStorage.getItem('kasir_assunniyyah_final_hd');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    transactions = parsed;
+                } else {
+                    transactions = [];
+                }
+            } catch(e) { 
+                transactions = []; 
+            }
+        } else {
+            transactions = [
+                { id: 2001, type: 'income', description: 'Infaq Jumat Berkah', amount: 150000, date: new Date(Date.now() - 86400000).toISOString() },
+                { id: 2002, type: 'expense', description: 'Snack Santri', amount: 45000, date: new Date(Date.now() - 43200000).toISOString() },
+                { id: 2003, type: 'income', description: 'Donasi Pengajian', amount: 80000, date: new Date().toISOString() }
+            ];
+            persist();
+        }
+        
+        let needUpdate = false;
+        for (let i = 0; i < transactions.length; i++) {
+            const t = transactions[i];
+            if (!t.date) { 
+                t.date = new Date().toISOString(); 
+                needUpdate = true; 
+            }
+            if (!t.id || typeof t.id !== 'number') { 
+                t.id = generateId();
+                needUpdate = true; 
+            }
+            if (typeof t.amount !== 'number') {
+                t.amount = parseFloat(t.amount) || 0;
+                needUpdate = true;
+            }
+        }
+        if (needUpdate) {
+            persist();
+        }
+    }
+
+    function animateElement(el) {
+        if (el) {
+            el.classList.add('magic-pop');
+            setTimeout(() => el.classList.remove('magic-pop'), 300);
+        }
+    }
+
+    function addTransaction(type, description, amountRaw, event) {
+        let amount = parseFloat(amountRaw);
+        if (isNaN(amount) || amount <= 0) { 
+            showToast('⚠️ Nominal harus lebih dari 0', true); 
+            return false; 
+        }
+        if (!description || description.trim() === '') { 
+            showToast('📝 Deskripsi tidak boleh kosong', true); 
+            return false; 
+        }
+        amount = Math.floor(amount);
+        const newTx = {
+            id: generateId(),
+            type: type,
+            description: description.trim(),
+            amount: amount,
+            date: new Date().toISOString()
+        };
+        transactions.push(newTx);
+        persist();
+        updateStats();
+        renderTransactions();
+        animateElement(document.querySelector('.form-section'));
+        showToast('✅ Transaksi berhasil disimpan');
+        return true;
+    }
+
+    // Fungsi untuk membuka modal konfirmasi hapus transaksi
+    function openDeleteConfirmModal(id) {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) {
+            showToast('❌ Data transaksi tidak ditemukan!', true);
+            return;
+        }
+        
+        pendingDeleteId = id;
+        const deleteTxDesc = document.getElementById('deleteTxDesc');
+        const amountPrefix = tx.type === 'income' ? '+' : '−';
+        deleteTxDesc.innerHTML = `${escapeHtml(tx.description)}<br><span style="font-size:0.75rem; color:${tx.type === 'income' ? '#10b981' : '#ef4444'}">${amountPrefix} ${formatRupiah(tx.amount)}</span>`;
+        
+        const modal = document.getElementById('confirmDeleteModal');
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeDeleteConfirmModal() {
+        const modal = document.getElementById('confirmDeleteModal');
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+        pendingDeleteId = null;
+    }
+
+    function executeDeleteTransaction() {
+        if (pendingDeleteId === null) {
+            showToast('Tidak ada transaksi yang akan dihapus', true);
+            return;
+        }
+        
+        const before = transactions.length;
+        transactions = transactions.filter(t => t.id !== pendingDeleteId);
+        if (transactions.length === before) {
+            closeDeleteConfirmModal();
+            return;
+        }
+        
+        persist();
+        updateStats();
+        renderTransactions();
+        animateElement(document.querySelector('.tx-list'));
+        showToast('🗑 Transaksi telah dihapus');
+        closeDeleteConfirmModal();
+    }
+
+    // Fungsi untuk membuka modal konfirmasi reset
+    function openResetConfirmModal() {
+        const modal = document.getElementById('confirmResetModal');
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeResetConfirmModal() {
+        const modal = document.getElementById('confirmResetModal');
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+
+    function executeResetData() {
+        transactions = [];
+        persist();
+        updateStats();
+        renderTransactions();
+        animateElement(document.querySelector('.tx-list'));
+        showToast('🗑 Semua data telah direset');
+        closeResetConfirmModal();
+    }
+
+    function openEditModal(id) {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) {
+            showToast('❌ Data transaksi tidak ditemukan!', true);
+            return;
+        }
+        
+        editingId = id;
+        document.getElementById('editTxType').value = tx.type;
+        document.getElementById('editTxDesc').value = tx.description;
+        document.getElementById('editTxAmount').value = tx.amount;
+        
+        let dateValue = '';
+        if (tx.date) {
+            const d = new Date(tx.date);
+            if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                dateValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+        }
+        if (!dateValue) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            dateValue = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+        document.getElementById('editTxDate').value = dateValue;
+        
+        const modal = document.getElementById('editModal');
+        modal.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+    
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+        editingId = null;
+    }
+    
+    function updateTransaction() {
+        if (editingId === null) {
+            showToast('Tidak ada transaksi yang sedang diedit', true);
+            return;
+        }
+        
+        const newType = document.getElementById('editTxType').value;
+        let newDesc = document.getElementById('editTxDesc').value;
+        let newAmount = parseFloat(document.getElementById('editTxAmount').value);
+        let newDateStr = document.getElementById('editTxDate').value;
+        
+        if (isNaN(newAmount) || newAmount <= 0) {
+            showToast('⚠️ Nominal harus lebih dari 0', true);
+            return;
+        }
+        if (!newDesc || newDesc.trim() === '') {
+            showToast('📝 Deskripsi tidak boleh kosong', true);
+            return;
+        }
+        if (!newDateStr) {
+            showToast('📅 Tanggal harus diisi', true);
+            return;
+        }
+        
+        newAmount = Math.floor(newAmount);
+        const newDate = new Date(newDateStr);
+        if (isNaN(newDate.getTime())) {
+            showToast('📅 Format tanggal tidak valid', true);
+            return;
+        }
+        
+        const index = transactions.findIndex(t => t.id === editingId);
+        
+        if (index !== -1) {
+            transactions[index].type = newType;
+            transactions[index].description = newDesc.trim();
+            transactions[index].amount = newAmount;
+            transactions[index].date = newDate.toISOString();
+            persist();
+            updateStats();
+            renderTransactions();
+            closeEditModal();
+            animateElement(document.querySelector('.tx-list'));
+            showToast('✅ Transaksi berhasil diperbarui!');
+        } else {
+            showToast('❌ Gagal menemukan transaksi yang akan diedit', true);
+            closeEditModal();
+        }
+    }
+
+    // NAVIGATION FUNCTION
+    function navigateTo(page) {
+        // Hide all pages
+        document.querySelectorAll('.page-container').forEach(container => {
+            container.classList.remove('active-page');
+        });
+        
+        // Show selected page
+        const targetPage = document.getElementById(`${page}Page`);
+        if (targetPage) {
+            targetPage.classList.add('active-page');
+        }
+        
+        // Update active nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-page') === page) {
+                item.classList.add('active');
+            }
+        });
+        
+        currentPage = page;
+        
+        // Refresh stats when on home page
+        if (page === 'home') {
+            updateStats();
+        }
+        
+        // Refresh transaction list when on history page
+        if (page === 'history') {
+            renderTransactions();
+        }
+    }
+
+    // ========== FITUR GESER (SWIPE) UNTUK NAVIGASI ==========
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isSwiping = false;
+    const MIN_SWIPE_DISTANCE = 50;
+
+    function handleTouchStart(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        isSwiping = true;
+    }
+
+    function handleTouchMove(e) {
+        if (!isSwiping) return;
+        touchEndX = e.changedTouches[0].screenX;
+    }
+
+    function handleTouchEnd(e) {
+        if (!isSwiping) return;
+        isSwiping = false;
+        
+        if (touchStartX === 0 || touchEndX === 0) return;
+        
+        const diffX = touchEndX - touchStartX;
+        
+        if (Math.abs(diffX) < MIN_SWIPE_DISTANCE) return;
+        
+        const pages = ['home', 'add', 'history', 'print'];
+        const currentIndex = pages.indexOf(currentPage);
+        
+        if (diffX < 0) {
+            if (currentIndex < pages.length - 1) {
+                navigateTo(pages[currentIndex + 1]);
+            }
+        } else if (diffX > 0) {
+            if (currentIndex > 0) {
+                navigateTo(pages[currentIndex - 1]);
+            }
+        }
+        
+        touchStartX = 0;
+        touchEndX = 0;
+    }
+
+    function initSwipeNavigation() {
+        const mainContainer = document.getElementById('mainContainer');
+        if (mainContainer) {
+            mainContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+            mainContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+            mainContainer.addEventListener('touchend', handleTouchEnd);
+        } else {
+            document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
+            document.body.addEventListener('touchmove', handleTouchMove, { passive: true });
+            document.body.addEventListener('touchend', handleTouchEnd);
+        }
+    }
+
+    // ========== LAPORAN PDF & JPG ==========
+    function createReportElement() {
+        const { income, expense, balance } = updateStats();
+        const dateNow = new Date();
+        const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        const logoUrl = "https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png";
+        
+        const container = document.createElement('div');
+        container.className = 'report-container';
+        
+        const headerDiv = document.createElement('div');
+        headerDiv.style.padding = '0 0 16px 0';
+        headerDiv.style.borderBottom = '2px solid #0f3b5c';
+        headerDiv.style.marginBottom = '24px';
+        headerDiv.style.display = 'flex';
+        headerDiv.style.alignItems = 'center';
+        headerDiv.style.gap = '16px';
+        headerDiv.innerHTML = `
+            <div style="width: 52px; height: 52px; background: transparent; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <img src="${logoUrl}" style="width: 100%; height: 100%; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:26px;\'>📖</span>';">
+            </div>
+            <div>
+                <h2 style="font-size: 1.15rem; margin:0; color:#0f3b5c; letter-spacing: -0.2px;">Laporan Keuangan Ngaji Selapanan</h2>
+                <p style="font-size:0.7rem; margin:4px 0 0; color:#475569; letter-spacing: 0.2px;">Alumni Assunniyyah • ${dateStr}</p>
+            </div>
+        `;
+        container.appendChild(headerDiv);
+        
+        const statsDiv = document.createElement('div');
+        statsDiv.style.display = 'flex';
+        statsDiv.style.justifyContent = 'space-between';
+        statsDiv.style.gap = '16px';
+        statsDiv.style.marginBottom = '28px';
+        statsDiv.innerHTML = `
+            <div style="flex:1; background:#f8fafc; padding: 14px 10px; border-radius: 16px; text-align:center;">
+                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">💚 PEMASUKAN</div>
+                <div style="font-size:1rem; font-weight:800; color:#10b981; margin-top:6px;">${formatRupiah(income)}</div>
+            </div>
+            <div style="flex:1; background:#f8fafc; padding: 14px 10px; border-radius: 16px; text-align:center;">
+                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">❤️ PENGELUARAN</div>
+                <div style="font-size:1rem; font-weight:800; color:#ef4444; margin-top:6px;">${formatRupiah(expense)}</div>
+            </div>
+            <div style="flex:1; background:#f8fafc; padding: 14px 10px; border-radius: 16px; text-align:center;">
+                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">🌟 SALDO</div>
+                <div style="font-size:1rem; font-weight:800; color:#0f3b5c; margin-top:6px;">${formatRupiah(balance)}</div>
+            </div>
+        `;
+        container.appendChild(statsDiv);
+        
+        const table = document.createElement('table');
+        table.style.width = '100%';
+        table.style.borderCollapse = 'collapse';
+        table.style.fontSize = '0.75rem';
+        table.innerHTML = `
+            <thead>
+                <tr style="background:#f1f5f9; border-bottom: 1px solid #e2e8f0;">
+                    <th style="padding: 12px 10px; text-align:left; font-size:0.7rem; font-weight:700; color:#1e293b;">Tanggal</th>
+                    <th style="padding: 12px 10px; text-align:left; font-size:0.7rem; font-weight:700; color:#1e293b;">Deskripsi</th>
+                    <th style="padding: 12px 10px; text-align:left; font-size:0.7rem; font-weight:700; color:#1e293b;">Jenis</th>
+                    <th style="padding: 12px 10px; text-align:right; font-size:0.7rem; font-weight:700; color:#1e293b;">Nominal</th>
+                </tr>
+            </thead>
+            <tbody id="reportTableBody"></tbody>
+        `;
+        container.appendChild(table);
+        
+        const tbody = table.querySelector('#reportTableBody');
+        if (transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:32px; text-align:center; color:#64748b;">Belum ada transaksi</td></tr>';
+        } else {
+            const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            sortedTransactions.forEach(tx => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #e2e8f0';
+                row.innerHTML = `
+                    <td style="padding: 10px 10px; font-size:0.7rem; color:#334155;">${formatDateReport(tx.date)}</td>
+                    <td style="padding: 10px 10px; font-size:0.7rem; font-weight:500; color:#1e293b;">${escapeHtml(tx.description)}</td>
+                    <td style="padding: 10px 10px; font-size:0.7rem; color:#475569;">${tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
+                    <td style="padding: 10px 10px; font-size:0.75rem; text-align:right; font-weight:600; ${tx.type === 'income' ? 'color:#10b981' : 'color:#ef4444'}">${tx.type === 'income' ? '+' : '-'} ${formatRupiah(tx.amount)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        const footer = document.createElement('div');
+        footer.style.textAlign = 'center';
+        footer.style.fontSize = '0.6rem';
+        footer.style.color = '#94a3b8';
+        footer.style.marginTop = '24px';
+        footer.style.padding = '12px 0 4px';
+        footer.style.borderTop = '1px solid #e2e8f0';
+        footer.innerText = 'Laporan resmi • Kasir Selapanan Alumni Assunniyyah';
+        container.appendChild(footer);
+        
+        return container;
+    }
+
+    async function exportToPDF() {
+        const { income, expense, balance } = updateStats();
+        const dateNow = new Date();
+        const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).replace(/\s/g, '_');
+        const logoUrl = "https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png";
+        
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.background = 'white';
+        pdfContainer.style.fontFamily = "'Inter', 'Segoe UI', system-ui, sans-serif";
+        pdfContainer.style.color = '#0f172a';
+        pdfContainer.style.width = '800px';
+        pdfContainer.style.lineHeight = '1.5';
+        pdfContainer.style.letterSpacing = '0.2px';
+        pdfContainer.style.padding = '20px';
+        
+        function getPageHeader(pageNum) {
+            return `
+                <div style="padding: 20px 24px 12px 24px; border-bottom: 2px solid #0f3b5c; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 48px; height: 48px; background: transparent; border: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="${logoUrl}" style="width: 100%; height: 100%; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\'font-size:24px;\'>📖</span>';">
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.1rem; margin:0; color:#0f3b5c; letter-spacing: -0.2px;">Laporan Keuangan Ngaji Selapanan</h2>
+                        <p style="font-size:0.7rem; margin:4px 0 0; color:#475569; letter-spacing:0.3px;">Alumni Assunniyyah • ${dateNow.toLocaleDateString('id-ID')} ${pageNum > 1 ? `(Halaman ${pageNum})` : ''}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const sortedTxs = [...transactions].sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        let allRowsHtml = '';
+        sortedTxs.forEach(tx => {
+            allRowsHtml += `
+                <tr>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.7rem; color:#334155;">${formatDateReport(tx.date)}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.7rem; font-weight:500; color:#1e293b;">${escapeHtml(tx.description)}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.7rem; color:#475569;">${tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.75rem; text-align:right; font-weight:600; ${tx.type === 'income' ? 'color:#10b981' : 'color:#ef4444'}">${tx.type === 'income' ? '+' : '-'} ${formatRupiah(tx.amount)}</td>
+                </tr>
+            `;
+        });
+        
+        if (transactions.length === 0) {
+            allRowsHtml = '<tr><td colspan="4" style="padding:32px; text-align:center; color:#64748b;">Belum ada transaksi</td></tr>';
+        }
+        
+        const maxRowsPerPage = 14;
+        const rowsArray = [];
+        const tbodyRegex = /<tr[\s\S]*?<\/tr>/g;
+        const matches = allRowsHtml.match(tbodyRegex) || [];
+        
+        let tempRows = '';
+        let count = 0;
+        for (let i = 0; i < matches.length; i++) {
+            if (count === 0) tempRows = '';
+            tempRows += matches[i];
+            count++;
+            if (count >= maxRowsPerPage || i === matches.length - 1) {
+                rowsArray.push(tempRows);
+                tempRows = '';
+                count = 0;
+            }
+        }
+        
+        for (let pageIdx = 0; pageIdx < rowsArray.length; pageIdx++) {
+            const pageNum = pageIdx + 1;
+            let pageContent = `<div style="page-break-after: ${pageIdx === rowsArray.length - 1 ? 'avoid' : 'always'}; page-break-inside: avoid;">`;
+            pageContent += getPageHeader(pageNum);
+            
+            if (pageIdx === 0) {
+                pageContent += `
+                    <div style="padding: 0 24px;">
+                        <div style="display: flex; justify-content: space-between; gap: 16px; margin-bottom: 24px;">
+                            <div style="flex:1; background:#f8fafc; padding: 14px 12px; border-radius: 16px; text-align:center;">
+                                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">💚 PEMASUKAN</div>
+                                <div style="font-size:1rem; font-weight:800; color:#10b981; margin-top:6px;">${formatRupiah(income)}</div>
+                            </div>
+                            <div style="flex:1; background:#f8fafc; padding: 14px 12px; border-radius: 16px; text-align:center;">
+                                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">❤️ PENGELUARAN</div>
+                                <div style="font-size:1rem; font-weight:800; color:#ef4444; margin-top:6px;">${formatRupiah(expense)}</div>
+                            </div>
+                            <div style="flex:1; background:#f8fafc; padding: 14px 12px; border-radius: 16px; text-align:center;">
+                                <div style="font-size:0.7rem; font-weight:600; color:#64748b;">🌟 SALDO</div>
+                                <div style="font-size:1rem; font-weight:800; color:#0f3b5c; margin-top:6px;">${formatRupiah(balance)}</div>
+                            </div>
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+                            <thead><tr style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;"><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Tanggal</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Deskripsi</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Jenis</th><th style="padding: 12px 12px; text-align:right; font-size:0.7rem;">Nominal</th></tr></thead>
+                            <tbody>${rowsArray[pageIdx]}</tbody>
+                        </table>
+                    </div>
+                `;
+            } else {
+                pageContent += `
+                    <div style="padding: 0 24px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+                            <thead><tr style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;"><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Tanggal</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Deskripsi</th><th style="padding: 12px 12px; text-align:left; font-size:0.7rem;">Jenis</th><th style="padding: 12px 12px; text-align:right; font-size:0.7rem;">Nominal</th></tr></thead>
+                            <tbody>${rowsArray[pageIdx]}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            pageContent += `<div style="text-align:center; font-size:0.6rem; color:#94a3b8; margin-top: 28px; padding: 12px 0 20px; border-top:1px solid #e2e8f0;">Laporan resmi • Kasir Selapanan Alumni Assunniyyah</div></div>`;
+            pdfContainer.innerHTML += pageContent;
+        }
+        
+        // Tambahkan ke body dengan posisi di luar layar
+        pdfContainer.style.position = 'fixed';
+        pdfContainer.style.top = '-9999px';
+        pdfContainer.style.left = '0';
+        document.body.appendChild(pdfContainer);
+        
+        try {
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `laporan_keuangan_${dateStr}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 3, letterRendering: true, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            await html2pdf().set(opt).from(pdfContainer).save();
+            showToast(`✅ PDF berhasil dibuat! ${rowsArray.length} halaman`);
+        } catch (err) {
+            console.error(err);
+            showToast('❌ Gagal generate PDF', true);
+        } finally {
+            if (pdfContainer && pdfContainer.remove) {
+                pdfContainer.remove();
+            }
+        }
+    }
+
+    async function exportToJPG() {
+        const dateNow = new Date();
+        const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).replace(/\s/g, '_');
+        
+        const reportElement = createReportElement();
+        
+        // Tambahkan ke body dengan posisi di luar layar (tetap berukuran normal)
+        reportElement.style.position = 'fixed';
+        reportElement.style.top = '-9999px';
+        reportElement.style.left = '0';
+        reportElement.style.visibility = 'visible';
+        reportElement.style.opacity = '1';
+        document.body.appendChild(reportElement);
+        
+        try {
+            const canvas = await html2canvas(reportElement, {
+                scale: 3,
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                logging: false,
+                letterRendering: true,
+                windowWidth: reportElement.scrollWidth,
+                windowHeight: reportElement.scrollHeight
+            });
+            
+            const link = document.createElement('a');
+            link.download = `laporan_keuangan_${dateStr}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+            
+            showToast('✅ Laporan berhasil diunduh sebagai JPG');
+        } catch (err) {
+            console.error(err);
+            showToast('❌ Gagal generate gambar', true);
+        } finally {
+            if (reportElement && reportElement.remove) {
+                reportElement.remove();
+            }
+        }
+    }
+
+    // ========== DARK MODE OTOMATIS BERDASARKAN WAKTU LOKAL ==========
+    function getLocalHour() {
+        const now = new Date();
+        // Mendapatkan jam dalam zona waktu lokal pengguna
+        return now.getHours();
+    }
+
+    function isDayTime() {
+        const hour = getLocalHour();
+        // Siang dari jam 06:00 sampai 18:00 (jam 6 sampai 17:59)
+        return hour >= 6 && hour < 18;
+    }
+
+    function setDarkMode(isDark) {
+        if (isDark) {
+            document.body.classList.add('dark');
+        } else {
+            document.body.classList.remove('dark');
+        }
+        localStorage.setItem('darkModePreference', isDark ? 'dark' : 'light');
+        updateDarkButtonUI(isDark);
+    }
+
+    function updateDarkButtonUI(isDark) {
+        const iconSpan = document.getElementById('darkIcon');
+        const textSpan = document.getElementById('darkText');
+        if (iconSpan) iconSpan.textContent = isDark ? '☀️' : '🌙';
+        if (textSpan) textSpan.textContent = isDark ? 'Light' : 'Dark';
+    }
+
+    function getSystemDarkMode() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    // Fungsi untuk menentukan dark mode berdasarkan waktu lokal
+    function getDarkModeByTime() {
+        return !isDayTime(); // Malam hari (18:00 - 05:59) = dark mode
+    }
+
+    function initDarkMode() {
+        const saved = localStorage.getItem('darkModePreference');
+        let isDark = false;
+        
+        if (saved === 'dark') {
+            isDark = true;
+        } else if (saved === 'light') {
+            isDark = false;
+        } else {
+            // Tidak ada preferensi tersimpan, gunakan mode berdasarkan waktu lokal
+            isDark = getDarkModeByTime();
+        }
+        
+        setDarkMode(isDark);
+        
+        // Update setiap jam untuk mengecek perubahan waktu (siang/malam)
+        setInterval(() => {
+            const savedManual = localStorage.getItem('darkModePreference');
+            // Hanya update otomatis jika user belum menyimpan preferensi manual
+            if (savedManual !== 'dark' && savedManual !== 'light') {
+                const newDarkMode = getDarkModeByTime();
+                const currentDarkMode = document.body.classList.contains('dark');
+                if (newDarkMode !== currentDarkMode) {
+                    setDarkMode(newDarkMode);
+                    showToast(`🌓 Dark mode otomatis berubah mengikuti waktu ${newDarkMode ? 'malam' : 'siang'}`, false);
+                }
+            }
+        }, 60000); // Cek setiap menit, tapi hanya akan berubah jika melewati batas jam 6 atau 18
+        
+        const btn = document.getElementById('darkModeBtn');
+        btn.addEventListener('click', () => {
+            const currentlyDark = document.body.classList.contains('dark');
+            setDarkMode(!currentlyDark);
+            showToast(`🌓 Dark mode ${!currentlyDark ? 'aktif' : 'nonaktif'} (manual)`, false);
+        });
+    }
+
+    function setupEvents() {
+        // Tombol simpan
+        document.getElementById('saveBtn').addEventListener('click', (e) => {
+            const type = document.getElementById('txType').value;
+            const desc = document.getElementById('txDesc').value;
+            const amount = document.getElementById('txAmount').value;
+            if (addTransaction(type, desc, amount, e)) {
+                document.getElementById('txDesc').value = '';
+                document.getElementById('txAmount').value = '';
+                document.getElementById('txDesc').focus();
+                updateStats();
+            }
+        });
+        
+        // Tombol reset - buka modal konfirmasi
+        document.getElementById('resetBtn').addEventListener('click', openResetConfirmModal);
+        
+        // Tombol konfirmasi reset
+        document.getElementById('confirmResetBtn').addEventListener('click', executeResetData);
+        
+        // Tombol batal reset
+        document.getElementById('cancelResetBtn').addEventListener('click', closeResetConfirmModal);
+        
+        // Tutup modal reset jika klik overlay
+        document.getElementById('confirmResetModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('confirmResetModal')) {
+                closeResetConfirmModal();
+            }
+        });
+        
+        // Tombol konfirmasi hapus transaksi
+        document.getElementById('confirmDeleteBtn').addEventListener('click', executeDeleteTransaction);
+        
+        // Tombol batal hapus
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteConfirmModal);
+        
+        // Tutup modal hapus jika klik overlay
+        document.getElementById('confirmDeleteModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('confirmDeleteModal')) {
+                closeDeleteConfirmModal();
+            }
+        });
+        
+        // Export buttons
+        document.getElementById('exportBtnCard').addEventListener('click', exportToPDF);
+        document.getElementById('exportJpgBtnCard').addEventListener('click', exportToJPG);
+        
+        // Modal edit
+        document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+        document.getElementById('updateBtn').addEventListener('click', updateTransaction);
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('editModal')) closeEditModal();
+        });
+        
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const page = item.getAttribute('data-page');
+                navigateTo(page);
+            });
+        });
+    }
+
+    function init() {
+        loadData();
+        updateStats();
+        renderTransactions();
+        initDarkMode();
+        setupEvents();
+        updateWisdomTexts();
+        navigateTo('home');
+        initSwipeNavigation();
+    }
+    init();
+</script>
+</body>
+</html>
