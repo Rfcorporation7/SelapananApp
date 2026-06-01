@@ -3,36 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Kasir Selapanan | Alumni Assunniyyah - High Resolution</title>
+    <title>Kasir Selapanan | Alumni Assunniyyah</title>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- html2pdf bundle & html2canvas untuk JPG -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- html2pdf bundle & html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- FileSaver.js untuk menyimpan file dengan aman -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
+        /* Semua style tetap sama seperti sebelumnya */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Sembunyikan elemen sementara untuk export - TIDAK TERLIHAT TAPI TETAP BERUKURAN NORMAL */
-        .export-temp-element {
-            position: fixed !important;
-            top: -9999px !important;
-            left: 0 !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: none !important;
-            z-index: -9999 !important;
-            width: auto !important;
-            height: auto !important;
-            overflow: visible !important;
-        }
-
-        /* HILANGKAN EFEK BIRU PADA SEMUA ELEMEN YANG BISA DI KLIK */
         button:focus, button:active, 
         .btn-save:focus, .btn-save:active, 
         .dark-toggle:focus, .dark-toggle:active, 
@@ -50,14 +34,12 @@
             border-color: transparent !important;
         }
 
-        /* Hilangkan efek highlight biru di mobile (webkit) */
         button, .btn-save, .dark-toggle, .btn-export, .btn-jpg, .btn-reset, .btn-delete, .btn-edit, .nav-item, .export-card, .stat-card {
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             user-select: none;
         }
 
-        /* Untuk input tetap ada sedikit fokus tapi tanpa biru */
         .field input:focus, .field select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(59,130,246,0.15) !important;
@@ -112,7 +94,6 @@
             padding-bottom: 70px;
         }
 
-        /* HEADER */
         .app-header {
             position: sticky;
             top: 0;
@@ -149,7 +130,6 @@
             border-radius: 12px;
             padding: 4px;
             overflow: hidden;
-            transition: border-color 0.3s ease;
         }
 
         .logo-img {
@@ -204,14 +184,12 @@
             transform: translateY(-1px);
         }
 
-        /* MAIN CONTENT */
         .main-container {
             max-width: 1280px;
             margin: 0 auto;
             padding: 24px 20px 80px;
         }
 
-        /* Page Container */
         .page-container {
             display: none;
             animation: fadeIn 0.3s ease;
@@ -224,7 +202,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* STATS CARDS */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -270,7 +247,6 @@
             color: transparent;
         }
 
-        /* Kata Mutiara */
         .wisdom-box {
             background: linear-gradient(135deg, var(--primary-light), var(--primary));
             border-radius: 20px;
@@ -295,7 +271,6 @@
             margin-bottom: 8px;
         }
 
-        /* FORM SECTION */
         .form-section {
             background: var(--bg-surface);
             border-radius: 28px;
@@ -389,7 +364,6 @@
             gap: 6px;
         }
 
-        /* EXPORT BUTTONS */
         .export-buttons {
             display: flex;
             gap: 16px;
@@ -428,7 +402,6 @@
         .export-pdf .export-icon { color: #ef4444; }
         .export-jpg .export-icon { color: #10b981; }
 
-        /* HISTORY SECTION */
         .history-header {
             display: flex;
             justify-content: space-between;
@@ -530,7 +503,6 @@
             color: var(--text-muted);
         }
 
-        /* BOTTOM NAVIGATION */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -583,11 +555,11 @@
         }
         .magic-pop { animation: slideFade 0.25s ease-out; }
 
-        /* Gaya untuk laporan - STYLE LENGKAP UNTUK PDF */
         .report-for-export {
             font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             line-height: 1.6;
             background: white;
+            width: 100%;
             max-width: 1000px;
             margin: 0 auto;
             padding: 40px;
@@ -611,6 +583,7 @@
             align-items: center;
             justify-content: center;
             padding: 8px;
+            border: 1px solid #e2e8f0;
         }
         .report-for-export .logo-area img {
             width: 100%;
@@ -632,12 +605,14 @@
             display: flex;
             gap: 24px;
             margin-bottom: 40px;
+            flex-wrap: wrap;
         }
         .report-for-export .stat-item {
             flex: 1;
             padding: 20px;
             border-radius: 20px;
             text-align: center;
+            min-width: 150px;
         }
         .report-for-export .stat-item.income-card { background: #f0fdf4; border: 1px solid #bbf7d0; }
         .report-for-export .stat-item.expense-card { background: #fef2f2; border: 1px solid #fecaca; }
@@ -673,21 +648,44 @@
             border-bottom: 1px solid #e2e8f0;
             color: #334155;
         }
+        
         .report-for-export .footer {
             text-align: center;
             margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 0.7rem;
-            color: #94a3b8;
+            padding-top: 24px;
+            border-top: 2px solid #cbd5e1;
+            font-size: 0.75rem;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            line-height: 1.8;
+            font-weight: 500;
         }
+        
+        .report-for-export .footer p {
+            margin: 4px 0;
+        }
+        
+        .report-for-export .footer .footer-title {
+            font-weight: 700;
+            color: #0f3b5c;
+            margin-bottom: 6px;
+        }
+        
         .report-for-export .empty-data {
             text-align: center;
             padding: 60px;
             color: #94a3b8;
         }
+        
+        .export-temp-wrapper {
+            position: fixed !important;
+            left: -9999px !important;
+            top: 0 !important;
+            width: 800px !important;
+            background: white !important;
+            z-index: -9999 !important;
+        }
 
-        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -798,7 +796,6 @@
             text-align: center;
         }
 
-        /* Toast notification */
         .toast-notification {
             position: fixed;
             bottom: 80px;
@@ -850,7 +847,7 @@
         <div class="brand">
             <div class="logo-wrapper">
                 <img class="logo-img" id="headerLogo" src="https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png" alt="Logo Assunniyyah" 
-                     onerror="this.onerror=null; this.src='https://via.placeholder.com/48?text=Logo';">
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 fill=%27%230f3b5c%27/%3E%3Ctext x=%2750%27 y=%2767%27 font-size=%2750%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27Arial%27%3EⓂ️%3C/text%3E%3C/svg%3E'">
             </div>
             <div class="brand-text">
                 <h1>Ngaji Selapanan</h1>
@@ -1033,6 +1030,89 @@
     let editingId = null;
     let currentPage = 'home';
     let pendingDeleteId = null;
+
+    // ========== TAMBAHAN UNTUK ANDROID WEBVIEW / APK ==========
+    // Deteksi apakah berjalan di Android WebView
+    function isAndroidWebView() {
+        return navigator.userAgent.indexOf('wv') > -1 || 
+               (navigator.userAgent.indexOf('Android') > -1 && navigator.userAgent.indexOf('Chrome') === -1);
+    }
+
+    // Fungsi request izin penyimpanan untuk Android (Android 11+)
+    async function requestStoragePermission() {
+        // Cek apakah ada permintaan izin dari Android WebView
+        if (isAndroidWebView() && window.AndroidInterface) {
+            try {
+                const result = window.AndroidInterface.requestStoragePermission();
+                return result === 'granted';
+            } catch(e) {
+                console.log('Android interface error:', e);
+                return true; // Anggap granted jika error
+            }
+        }
+        return true; // Default true untuk browser biasa
+    }
+
+    // Fungsi download yang lebih handal untuk aplikasi
+    async function downloadBlob(blob, filename) {
+        // Method 1: Gunakan Android Interface jika tersedia (untuk APK)
+        if (window.AndroidInterface && typeof window.AndroidInterface.downloadFile === 'function') {
+            try {
+                // Konversi blob ke base64
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = function() {
+                    const base64data = reader.result;
+                    window.AndroidInterface.downloadFile(base64data, filename);
+                };
+                return true;
+            } catch(e) {
+                console.log('Android download error:', e);
+            }
+        }
+        
+        // Method 2: Gunakan metode download standar dengan link
+        try {
+            // Minta izin penyimpanan terlebih dahulu (untuk Android)
+            await requestStoragePermission();
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            
+            // Hapus setelah download
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            return true;
+        } catch (e) {
+            console.error('Download error:', e);
+            
+            // Method 3: Fallback - buka di tab baru
+            try {
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                return true;
+            } catch(e2) {
+                console.error('Fallback download error:', e2);
+                return false;
+            }
+        }
+    }
+
+    // Tambahkan interface untuk komunikasi dengan Android
+    function setupAndroidInterface() {
+        if (isAndroidWebView() && !window.AndroidInterface) {
+            console.log('Menunggu Android Interface...');
+            // Android akan menginjeksi interface secara otomatis
+        }
+    }
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toastMessage');
@@ -1357,23 +1437,21 @@
         }
     }
 
-    // ========== EXPORT PDF & JPG YANG DIPERBAIKI - MENGGUNAKAN CLONE ELEMENT ==========
     function createReportElement() {
         const { income, expense, balance } = updateStats();
         const dateNow = new Date();
         const dateStr = dateNow.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         const timeStr = dateNow.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        const logoUrl = "https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png";
         
-        // Buat container report
         const container = document.createElement('div');
         container.className = 'report-for-export';
         
-        // Header
+        const logoUrl = "https://i.ibb.co/RppqCNY9/LOGO-ASSUNNIYYAH.png";
+        
         let headerHtml = `
             <div class="header-section">
                 <div class="logo-area">
-                    <img src="${logoUrl}" alt="Logo" onerror="this.style.display='none'">
+                    <img src="${logoUrl}" alt="Logo Assunniyyah" style="width:100%; height:100%; object-fit:contain;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%; height:100%; background:#0f3b5c; border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; font-size:24px;\\'>Ⓜ️</div>'">
                 </div>
                 <div class="title-area">
                     <h2>Laporan Keuangan Ngaji Selapanan</h2>
@@ -1396,7 +1474,6 @@
             </div>
         `;
         
-        // Table transaksi
         let tableHtml = '';
         const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
@@ -1409,17 +1486,22 @@
                 const amountSign = tx.type === 'income' ? '+' : '-';
                 rowsHtml += `
                     <tr>
-                        <td>${formatDateReport(tx.date)}</td>
-                        <td><strong>${escapeHtml(tx.description)}</strong></td>
-                        <td>${tx.type === 'income' ? '📈 Pemasukan' : '📉 Pengeluaran'}</td>
-                        <td style="text-align: right; color: ${amountColor}; font-weight: 700;">${amountSign} ${formatRupiah(tx.amount)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${formatDateReport(tx.date)}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;"><strong>${escapeHtml(tx.description)}</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${tx.type === 'income' ? '📈 Pemasukan' : '📉 Pengeluaran'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right; color: ${amountColor}; font-weight: 700;">${amountSign} ${formatRupiah(tx.amount)}</td>
                     </tr>
                 `;
             }
             tableHtml = `
-                <table>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                     <thead>
-                        <tr><th>Tanggal</th><th>Deskripsi</th><th>Jenis</th><th style="text-align: right;">Nominal</th></tr>
+                        <tr>
+                            <th style="background: #f1f5f9; padding: 14px 12px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1;">Tanggal</th>
+                            <th style="background: #f1f5f9; padding: 14px 12px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1;">Deskripsi</th>
+                            <th style="background: #f1f5f9; padding: 14px 12px; text-align: left; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1;">Jenis</th>
+                            <th style="background: #f1f5f9; padding: 14px 12px; text-align: right; font-weight: 700; color: #1e293b; border-bottom: 2px solid #cbd5e1;">Nominal</th>
+                        </tr>
                     </thead>
                     <tbody>
                         ${rowsHtml}
@@ -1428,11 +1510,12 @@
             `;
         }
         
-        // Footer
         let footerHtml = `
             <div class="footer">
-                Laporan resmi • Kasir Selapanan Alumni Assunniyyah<br>
-                Dicetak: ${dateStr} ${timeStr}
+                <div class="footer-title">Laporan Resmi Kasir Selapanan</div>
+                <p>Alumni Pondok Pesantren Assunniyyah</p>
+                <p style="font-size: 0.7rem; margin-top: 8px;">Dicetak: ${dateStr} | Pukul: ${timeStr} WIB</p>
+                <p style="font-size: 0.65rem; margin-top: 6px;">Terima kasih atas kepercayaan dan partisipasinya</p>
             </div>
         `;
         
@@ -1447,13 +1530,14 @@
         showToast('📄 Sedang menyiapkan PDF...');
         
         const reportElement = createReportElement();
-        reportElement.style.position = 'absolute';
+        reportElement.style.position = 'fixed';
         reportElement.style.left = '-9999px';
         reportElement.style.top = '0';
+        reportElement.style.width = '800px';
+        reportElement.style.backgroundColor = 'white';
         document.body.appendChild(reportElement);
         
-        // Tunggu gambar logo termuat
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         try {
             const opt = {
@@ -1463,15 +1547,21 @@
                 html2canvas: { 
                     scale: 2.5, 
                     letterRendering: true, 
-                    useCORS: true, 
+                    useCORS: true,
                     logging: false, 
                     backgroundColor: '#ffffff'
                 },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
             
-            await html2pdf().set(opt).from(reportElement).save();
-            showToast('✅ PDF berhasil disimpan');
+            const pdfBlob = await html2pdf().set(opt).from(reportElement).outputPdf('blob');
+            
+            if (pdfBlob && pdfBlob.size > 0) {
+                await downloadBlob(pdfBlob, `laporan_keuangan_${dateStr}.pdf`);
+                showToast('✅ PDF berhasil disimpan ke folder Download');
+            } else {
+                throw new Error('Gagal membuat PDF');
+            }
         } catch (err) {
             console.error('PDF Error:', err);
             showToast('❌ Gagal generate PDF: ' + err.message, true);
@@ -1489,33 +1579,35 @@
         showToast('🖼️ Sedang menyiapkan gambar...');
         
         const reportElement = createReportElement();
-        reportElement.style.position = 'absolute';
+        reportElement.style.position = 'fixed';
         reportElement.style.left = '-9999px';
         reportElement.style.top = '0';
+        reportElement.style.width = '800px';
+        reportElement.style.backgroundColor = 'white';
         document.body.appendChild(reportElement);
         
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         try {
             const canvas = await html2canvas(reportElement, {
-                scale: 3,
+                scale: 2.5,
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 logging: false,
                 letterRendering: true
             });
             
-            canvas.toBlob(blob => {
+            canvas.toBlob(async (blob) => {
                 if (blob) {
-                    saveAs(blob, `laporan_keuangan_${dateStr}.jpg`);
-                    showToast('✅ JPG berhasil disimpan');
+                    await downloadBlob(blob, `laporan_keuangan_${dateStr}.jpg`);
+                    showToast('✅ JPG berhasil disimpan ke folder Download');
                 } else {
                     showToast('❌ Gagal generate gambar', true);
                 }
             }, 'image/jpeg', 0.95);
         } catch (err) {
             console.error('JPG Error:', err);
-            showToast('❌ Gagal generate gambar', true);
+            showToast('❌ Gagal generate gambar: ' + err.message, true);
         } finally {
             if (reportElement && reportElement.remove) {
                 reportElement.remove();
@@ -1523,7 +1615,7 @@
         }
     }
 
-    // Dark Mode berdasarkan waktu
+    // Dark Mode
     function getLocalHour() { return new Date().getHours(); }
     function isDayTime() { const hour = getLocalHour(); return hour >= 6 && hour < 18; }
     function setDarkMode(isDark) {
@@ -1595,6 +1687,12 @@
         updateWisdomTexts();
         navigateTo('home');
         initSwipeNavigation();
+        setupAndroidInterface();
+        
+        // Notifikasi jika dijalankan di WebView
+        if (isAndroidWebView()) {
+            console.log('Berjalan di Android WebView - mode APK');
+        }
     }
     init();
 </script>
