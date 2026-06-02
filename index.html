@@ -1031,51 +1031,56 @@
     let currentPage = 'home';
     let pendingDeleteId = null;
 
-    // ========== TAMBAHAN UNTUK ANDROID WEBVIEW / APK ==========
-    // Deteksi apakah berjalan di Android WebView
+    // ========== FUNGSI DOWNLOAD GAMBAR UNTUK KODULAR ==========
+    // Fungsi ini akan menangkap gambar yang di-klik di WebView
+    
     function isAndroidWebView() {
         return navigator.userAgent.indexOf('wv') > -1 || 
                (navigator.userAgent.indexOf('Android') > -1 && navigator.userAgent.indexOf('Chrome') === -1);
     }
 
-    // Fungsi request izin penyimpanan untuk Android (Android 11+)
-    async function requestStoragePermission() {
-        // Cek apakah ada permintaan izin dari Android WebView
-        if (isAndroidWebView() && window.AndroidInterface) {
-            try {
-                const result = window.AndroidInterface.requestStoragePermission();
-                return result === 'granted';
-            } catch(e) {
-                console.log('Android interface error:', e);
-                return true; // Anggap granted jika error
-            }
+    function showToastKodular(message, isError = false) {
+        let toast = document.getElementById('toastMessage');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toastMessage';
+            toast.className = 'toast-notification';
+            document.body.appendChild(toast);
         }
-        return true; // Default true untuk browser biasa
+        toast.textContent = message;
+        toast.style.background = isError ? '#ef4444' : '#10b981';
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
     }
 
-    // Fungsi download yang lebih handal untuk aplikasi
-    async function downloadBlob(blob, filename) {
-        // Method 1: Gunakan Android Interface jika tersedia (untuk APK)
-        if (window.AndroidInterface && typeof window.AndroidInterface.downloadFile === 'function') {
-            try {
-                // Konversi blob ke base64
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onloadend = function() {
-                    const base64data = reader.result;
-                    window.AndroidInterface.downloadFile(base64data, filename);
-                };
-                return true;
-            } catch(e) {
-                console.log('Android download error:', e);
+    function extractFileNameFromUrl(url) {
+        try {
+            let filename = url.split('/').pop();
+            filename = filename.split('?')[0];
+            if (filename.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i)) {
+                return filename;
             }
+            return 'gambar_' + Date.now() + '.jpg';
+        } catch(e) {
+            return 'gambar_' + Date.now() + '.jpg';
+        }
+    }
+
+    function downloadBlobForKodular(blob, filename) {
+        // Method 1: Gunakan Android Interface jika tersedia (untuk Kodular dengan WebView extension)
+        if (window.AndroidInterface && typeof window.AndroidInterface.downloadFile === 'function') {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = function() {
+                window.AndroidInterface.downloadFile(reader.result, filename);
+            };
+            return true;
         }
         
-        // Method 2: Gunakan metode download standar dengan link
+        // Method 2: Gunakan metode download standar
         try {
-            // Minta izin penyimpanan terlebih dahulu (untuk Android)
-            await requestStoragePermission();
-            
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -1084,36 +1089,114 @@
             document.body.appendChild(a);
             a.click();
             
-            // Hapus setelah download
             setTimeout(() => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }, 100);
             return true;
         } catch (e) {
-            console.error('Download error:', e);
+            console.error('Standard download error:', e);
             
-            // Method 3: Fallback - buka di tab baru
+            // Method 3: Fallback terakhir - buka di tab baru
             try {
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
                 return true;
             } catch(e2) {
-                console.error('Fallback download error:', e2);
                 return false;
             }
         }
     }
 
-    // Tambahkan interface untuk komunikasi dengan Android
-    function setupAndroidInterface() {
-        if (isAndroidWebView() && !window.AndroidInterface) {
-            console.log('Menunggu Android Interface...');
-            // Android akan menginjeksi interface secara otomatis
+    function downloadBase64Image(base64Data, fileName) {
+        try {
+            const byteString = atob(base64Data.split(',')[1]);
+            const mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], { type: mimeString });
+            downloadBlobForKodular(blob, fileName);
+        } catch(e) {
+            console.error('Base64 download error:', e);
+            window.open(base64Data, '_blank');
         }
     }
 
+    async function downloadBlobImage(blobUrl, fileName) {
+        try {
+            const response = await fetch(blobUrl);
+            const blob = await response.blob();
+            downloadBlobForKodular(blob, fileName);
+        } catch(e) {
+            console.error('Blob download error:', e);
+            window.open(blobUrl, '_blank');
+        }
+    }
+
+    async function downloadImageFromUrl(imageUrl, fileName) {
+        try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            downloadBlobForKodular(blob, fileName);
+        } catch(e) {
+            console.error('URL download error:', e);
+            window.open(imageUrl, '_blank');
+        }
+    }
+
+    function setupImageDownloadForKodular() {
+        // Tangkap semua event klik pada gambar di dalam dokumen
+        document.body.addEventListener('click', function(e) {
+            // Cari elemen gambar yang diklik
+            let targetImg = e.target.closest('img');
+            
+            if (targetImg && targetImg.src) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const imageUrl = targetImg.src;
+                const fileName = extractFileNameFromUrl(imageUrl);
+                
+                // Cek apakah gambar sudah dalam bentuk blob/dataURL atau URL biasa
+                if (imageUrl.startsWith('data:image')) {
+                    downloadBase64Image(imageUrl, fileName);
+                } else if (imageUrl.startsWith('blob:')) {
+                    downloadBlobImage(imageUrl, fileName);
+                } else {
+                    downloadImageFromUrl(imageUrl, fileName);
+                }
+                
+                showToastKodular('📸 Mengunduh gambar: ' + fileName);
+                return false;
+            }
+        }, true); // Gunakan capture phase untuk menangkap lebih awal
+    }
+
+    function downloadCanvasAsImage(canvasId, fileName) {
+        const canvas = document.getElementById(canvasId);
+        if (canvas) {
+            canvas.toBlob(function(blob) {
+                downloadBlobForKodular(blob, fileName || 'canvas_image.png');
+                showToastKodular('📸 Gambar canvas berhasil diunduh');
+            }, 'image/png');
+        } else {
+            showToastKodular('❌ Canvas tidak ditemukan', true);
+        }
+    }
+
+    // Ekspos fungsi ke global scope agar bisa dipanggil dari Kodular
+    window.downloadImageFromUrl = downloadImageFromUrl;
+    window.downloadCanvasAsImage = downloadCanvasAsImage;
+    window.forceDownloadImage = function(imageUrl, fileName) {
+        downloadImageFromUrl(imageUrl, fileName || extractFileNameFromUrl(imageUrl));
+    };
+
+    // ========== FUNGSI ASLI (TIDAK DIRUBAH) ==========
+    
     function showToast(message, isError = false) {
         const toast = document.getElementById('toastMessage');
         toast.textContent = message;
@@ -1557,7 +1640,7 @@
             const pdfBlob = await html2pdf().set(opt).from(reportElement).outputPdf('blob');
             
             if (pdfBlob && pdfBlob.size > 0) {
-                await downloadBlob(pdfBlob, `laporan_keuangan_${dateStr}.pdf`);
+                await downloadBlobForKodular(pdfBlob, `laporan_keuangan_${dateStr}.pdf`);
                 showToast('✅ PDF berhasil disimpan ke folder Download');
             } else {
                 throw new Error('Gagal membuat PDF');
@@ -1599,7 +1682,7 @@
             
             canvas.toBlob(async (blob) => {
                 if (blob) {
-                    await downloadBlob(blob, `laporan_keuangan_${dateStr}.jpg`);
+                    await downloadBlobForKodular(blob, `laporan_keuangan_${dateStr}.jpg`);
                     showToast('✅ JPG berhasil disimpan ke folder Download');
                 } else {
                     showToast('❌ Gagal generate gambar', true);
@@ -1687,11 +1770,14 @@
         updateWisdomTexts();
         navigateTo('home');
         initSwipeNavigation();
-        setupAndroidInterface();
+        
+        // Aktifkan fungsi download gambar untuk Kodular
+        setupImageDownloadForKodular();
         
         // Notifikasi jika dijalankan di WebView
         if (isAndroidWebView()) {
-            console.log('Berjalan di Android WebView - mode APK');
+            console.log('Berjalan di Android WebView - mode APK (Download gambar siap digunakan)');
+            showToastKodular('📱 Mode APK Aktif - Klik gambar untuk mendownload');
         }
     }
     init();
